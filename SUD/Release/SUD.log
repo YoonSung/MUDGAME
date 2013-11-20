@@ -1,0 +1,21 @@
+﻿빌드 시작: 2013-11-21 오전 1:23:43
+     1>2 노드의 "C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\SUD\SUD.vcxproj" 프로젝트(Build 대상)입니다.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Release\SUD.pch" /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt SUD.cpp
+         SUD.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\Release\SUD.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\Release\SUD.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\Release\SUD.lib" /MACHINE:X86 /SAFESEH Release\Character.obj
+         Release\GameManager.obj
+         Release\GameMap.obj
+         Release\Monster.obj
+         Release\PlayerCharacter.obj
+         Release\stdafx.obj
+         Release\SUD.obj
+         코드를 생성하고 있습니다.
+         코드를 생성했습니다.
+         SUD.vcxproj -> C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\Release\SUD.exe
+     1>"C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\SUD\SUD.vcxproj" 프로젝트를 빌드했습니다(Build 대상).
+
+빌드했습니다.
+
+경과 시간: 00:00:00.84
