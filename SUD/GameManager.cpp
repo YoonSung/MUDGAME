@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "GameManager.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,20 +7,22 @@
 #include <process.h>
 #include <conio.h>
 
-#define VACANT_SPACE	"¡à "
-#define ENEMY_SPACE		"¢Ã "
-#define TARGET_SPACE	"¢¾ "
-#define PLAYER_SPACE	"¡Ú "
+#define VACANT_SPACE	"â–¡ "
+#define ENEMY_SPACE		"â–£ "
+#define TARGET_SPACE	"â™¥ "
+#define PLAYER_SPACE	"â˜… "
 #define NEWLINE			"\n\n"
 #define CLEAR_MONITOR	"cls"
 
-//¡à¢Ã¡Ú¢¾
+//â–¡â–£â˜…â™¥
 
 bool m_Flag = true;
 CGameMap* h_Map = nullptr;
 CPlayerCharacter* h_PC = nullptr;
 
 unsigned int WINAPI ThreadProc( LPVOID lpParam );
+
+// agebreak : ì•„ë˜ í•¨ìˆ˜ë“¤ì€ í´ë˜ìŠ¤ì˜ ë©¤ë²„ í•¨ìˆ˜ë¡œ ë§Œë“¤ë„ë¡ í•©ë‹ˆë‹¤. ì¼ë°˜ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ëŠ”ê²ƒì€ ì¢‹ì§€ ì•ŠìŠµë‹ˆë‹¤.
 void PrintExceptEnemy();
 void PrintAllThing() ;
 void _Print(char endXPos, char endYPos, std::string enemySpot);
@@ -36,12 +38,14 @@ CGameManager::CGameManager(void)
 CGameManager::~CGameManager(void)
 {
 	delete m_PC;
+
+	// agebreak : ìƒì„±í•œ m_Mapì„ í•´ì œí•˜ì§€ ì•Šì•„ì„œ, ë©”ëª¨ë¦¬ë¦­ì´ ë°œìƒí•©ë‹ˆë‹¤.
 }
 
 void CGameManager::Init()
 {
-	//°ÔÀÓ¿¡ ´ëÇÑ ¼³¸íºÎºĞÀÌ ÀÖ¾î¾ß ÇÑ´Ù.
-	//³­ÀÌµµ, ÀúÀåµÈ ¸ñ·Ï ºÒ·¯¿À±â µîÀÌ Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
+	//ê²Œì„ì— ëŒ€í•œ ì„¤ëª…ë¶€ë¶„ì´ ìˆì–´ì•¼ í•œë‹¤.
+	//ë‚œì´ë„, ì €ì¥ëœ ëª©ë¡ ë¶ˆëŸ¬ì˜¤ê¸° ë“±ì´ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
 	printf_s ( "[Game Start!!]\n" );
 	srand ( ( unsigned ) time ( NULL ) );
 
@@ -68,9 +72,9 @@ void CGameManager::Release()
 
 bool CGameManager::InputProc()
 {
-	//Å°º¸µå ÀÔ·ÂÀ» ¹Ş¾Æ¼­ 
-	//Ä¿¸Çµå¸¦ ÆÄ½ÌÇÏ°í ½ÇÇàÇÑ´Ù.
-	//esc¸¦ ÀÔ·Â¹ŞÀ¸¸é Á¾·áµÈ´Ù
+	//í‚¤ë³´ë“œ ì…ë ¥ì„ ë°›ì•„ì„œ 
+	//ì»¤ë§¨ë“œë¥¼ íŒŒì‹±í•˜ê³  ì‹¤í–‰í•œë‹¤.
+	//escë¥¼ ì…ë ¥ë°›ìœ¼ë©´ ì¢…ë£Œëœë‹¤
 	
 	
 	char strInput = _getch(); 
@@ -84,7 +88,7 @@ bool CGameManager::InputProc()
 	if ( strInput == 'd' || strInput == 'D')
 		m_PC->Move ( DIR_RIGHT ) ;
 
-	//È­»ìÇ¥·Î º¯°æ¿¹Á¤. esc·Î È¯°æ¼³Á¤ ÆäÀÌÁö¿¡ ´ëÇÑ Ãß°¡»çÇ× ÇÊ¿ä
+	//í™”ì‚´í‘œë¡œ ë³€ê²½ì˜ˆì •. escë¡œ í™˜ê²½ì„¤ì • í˜ì´ì§€ì— ëŒ€í•œ ì¶”ê°€ì‚¬í•­ í•„ìš”
 
 	PrintExceptEnemy();
 	return true;
@@ -93,7 +97,9 @@ bool CGameManager::InputProc()
 //it is no use after now.
 bool CGameManager::IsInput ( std::string inputValue, const char* compareValue )
 {
-	return ( strcmp ( inputValue.c_str(), compareValue ) == 0 );
+	// agebreak : stringì„ ì‚¬ìš©í•˜ëŠ” ê²½ìš°, strcmpë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì•„ë„ ë°”ë¡œ ë¹„êµ ê°€ëŠ¥í•©ë‹ˆë‹¤. 
+	//return ( strcmp ( inputValue.c_str(), compareValue ) == 0 );
+	return (inputValue == compareValue);
 }
 
 
@@ -113,7 +119,7 @@ void CGameManager::CheckCombatOccur()
 
 void CGameManager::CreateMobs()
 {
-	//ÇÃ·¹ÀÌ¾î ½ÃÀÛÁ¡, ¸ñÇ¥ÁöÁ¡¿¡´Â ¸÷ÀÌ »ı±âÁö ¾Êµµ·Ï Ã³¸®°¡ ÇÊ¿äÇÏ´Ù. 
+	//í”Œë ˆì´ì–´ ì‹œì‘ì , ëª©í‘œì§€ì ì—ëŠ” ëª¹ì´ ìƒê¸°ì§€ ì•Šë„ë¡ ì²˜ë¦¬ê°€ í•„ìš”í•˜ë‹¤. 
 	char buf [ 32 ] =  { 0, };
 
 	int mobCount = ( MAP_SIZE * MAP_SIZE ) / 4 ;
@@ -184,6 +190,7 @@ void _Print(char endXPos, char endYPos, std::string enemySpot)
 	printf_s(buf.c_str());
 }
 
+// agebreak : í™”ë©´ ì¶œë ¥ì— ìŠ¤ë ˆë“œë¥¼ ì‚¬ìš©í•œê±´ ì¢‹ì€ ì ‘ê·¼ì…ë‹ˆë‹¤. ^^
 unsigned int WINAPI ThreadProc( LPVOID lpParam )
 {
 
@@ -225,7 +232,7 @@ void CGameManager::OccurCombat()
 {
 	AutoMapDisPlayOFF();
 	PrintExceptEnemy();
-	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Á»ºñ¸¦ ¸¸³µ¾î¿ä!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
+	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ì¢€ë¹„ë¥¼ ë§Œë‚¬ì–´ìš”!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
 	Sleep(3500);
 	system ( CLEAR_MONITOR );
 
@@ -238,7 +245,7 @@ void CGameManager::EndCombat()
 {
 	AutoMapDisplayON();
 
-	//ÀüÅõ·Î ÀÎÇØ ¹Ù²ï »óÈ²µéÀ» ¿©±â¼­ Ã³¸®
+	//ì „íˆ¬ë¡œ ì¸í•´ ë°”ë€ ìƒí™©ë“¤ì„ ì—¬ê¸°ì„œ ì²˜ë¦¬
 }
 
 bool CGameManager::InputProcInCombat()
@@ -246,10 +253,10 @@ bool CGameManager::InputProcInCombat()
 	std::string strInput;
 
 
-	printf_s( "ÇöÀç´Â Å×½ºÆ® ÁßÀÌ´Ï 'ÀÌ°å´Ù'¸¦ ÀÔ·ÂÇÏ½Ã¸é ÀüÅõ°¡ Á¾·áµË´Ï´Ù.\n" );
+	printf_s( "í˜„ì¬ëŠ” í…ŒìŠ¤íŠ¸ ì¤‘ì´ë‹ˆ 'ì´ê²¼ë‹¤'ë¥¼ ì…ë ¥í•˜ì‹œë©´ ì „íˆ¬ê°€ ì¢…ë£Œë©ë‹ˆë‹¤.\n" );
 	
 
-	printf_s( "¸í·É => ");
+	printf_s( "ëª…ë ¹ => ");
 	getline(std::cin, strInput);
 
 	//printf_s( "INPUT:%s\n",strInput.c_str() );
@@ -257,28 +264,29 @@ bool CGameManager::InputProcInCombat()
 
 	if ( IsInput ( strInput, "q") )  {
 		printf_s ("quit\n");
-		//µµ¸ÁÄ¥ ¼ö ÀÖÀ¸³ª ÆĞ³ÎÆ¼°¡ Å©°Ô ÀÛ¿ëÇÒ ¼ö ÀÖµµ·Ï
+		//ë„ë§ì¹  ìˆ˜ ìˆìœ¼ë‚˜ íŒ¨ë„í‹°ê°€ í¬ê²Œ ì‘ìš©í•  ìˆ˜ ìˆë„ë¡
 		return false;
 	} 
-	else if ( IsInput ( strInput, "ÀÌ°å´Ù") )
+	else if ( IsInput ( strInput, "ì´ê²¼ë‹¤") )
 	{
-		printf_s ( "´ç½ÅÀÌ ÀÌ°å¾î¿ä~ ¿ì¿Í~~\n" );
+		printf_s ( "ë‹¹ì‹ ì´ ì´ê²¼ì–´ìš”~ ìš°ì™€~~\n" );
 		destroyMonster(m_PC->GetPositionX(), m_PC->GetPositionY());
 
 		return false;
 	}
 	else
 	{
-		printf_s ( "¾ÆÁ÷Àº ¸í·ÉÀÌ Áö¿øµÇÁö ¾Ê³×¿ä. ¹Ì~¾È!!!\n" );
+		printf_s ( "ì•„ì§ì€ ëª…ë ¹ì´ ì§€ì›ë˜ì§€ ì•Šë„¤ìš”. ë¯¸~ì•ˆ!!!\n" );
 	}
 	
 	return true;
-	//ÀüÅõ´Â ÀÔ·ÂÇÏ´Â ÇüÅÂ°¡ ¾Æ´Ñ guiÇüÅÂ·Î ÁøÇà¿¹Á¤,
-	//ÀüÅõ½Ã ½Ã°£ÀÌ °æ°úÇÔ¿¡ µû¶ó¼­ ÁÖº¯À¯´ÖµéÀÌ ÀüÅõÁö¿ªÀ¸·Î ÀÌµ¿ÇÒ È®·ü Áõ°¡.
+	//ì „íˆ¬ëŠ” ì…ë ¥í•˜ëŠ” í˜•íƒœê°€ ì•„ë‹Œ guií˜•íƒœë¡œ ì§„í–‰ì˜ˆì •,
+	//ì „íˆ¬ì‹œ ì‹œê°„ì´ ê²½ê³¼í•¨ì— ë”°ë¼ì„œ ì£¼ë³€ìœ ë‹›ë“¤ì´ ì „íˆ¬ì§€ì—­ìœ¼ë¡œ ì´ë™í•  í™•ë¥  ì¦ê°€.
 }
 
 void CGameManager::destroyMonster(int x, int y)
 {
+	// agebreak : delete í•˜ì§€ ì•Šìœ¼ë©´, ë©”ëª¨ë¦¬ ë¦­ì´ ë°œìƒí•©ë‹ˆë‹¤.
 	m_Map->GetMapInfo(x, y)->pMob = nullptr;
 }
 
@@ -289,7 +297,7 @@ bool CGameManager::CheckMissionClear()
 	x = m_PC->GetPositionX();
 	y = m_PC->GetPositionY();
 
-	//ÇöÀç map_size ³¡À¸·Î Á¤ÇØÁø ¹Ì¼ÇÅ¬¸®¾î Àå¼Ò´Â º¯°æÀÌ ÇÊ¿ä
+	//í˜„ì¬ map_size ëìœ¼ë¡œ ì •í•´ì§„ ë¯¸ì…˜í´ë¦¬ì–´ ì¥ì†ŒëŠ” ë³€ê²½ì´ í•„ìš”
 	if ( x == MAP_SIZE-1 && y == MAP_SIZE-1 )
 		return true;
 	
@@ -300,11 +308,11 @@ void CGameManager::EndMission()
 {
 	AutoMapDisPlayOFF();
 	PrintExceptEnemy();
-	printf_s ("¹Ì¼ÇÀÌ Á¾·áµÇ¾ú½À´Ï´Ù.\n");
+	printf_s ("ë¯¸ì…˜ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.\n");
 	Sleep(3500);
-	printf_s ("ÇöÀç Å×½ºÆ®ÁßÀÌ¹Ç·Î °ÔÀÓÀº ÇÑÆÇ¸¸ ÇÒ ¼ö ÀÖ¾î¿ä.\nÇÁ·Î±×·¥À» Á¾·áÇÕ´Ï´Ù ^^.");
+	printf_s ("í˜„ì¬ í…ŒìŠ¤íŠ¸ì¤‘ì´ë¯€ë¡œ ê²Œì„ì€ í•œíŒë§Œ í•  ìˆ˜ ìˆì–´ìš”.\ní”„ë¡œê·¸ë¨ì„ ì¢…ë£Œí•©ë‹ˆë‹¤ ^^.");
 
 	Sleep(2000);
-	//º»·¡ °Å½½·¯ ¿Ã¶ó°¡¼­ InputProc() ÇÔ¼ö·Î µÇµ¹¾Æ°£´Ù. ÇÏÁö¸¸ ¿©ÀüÈ÷ inputProcÀº true°ªÀÌ´Ù. ¹Ì¼ÇÁ¾·á¿¡ ´ëÇÑ Ã³¸®ÇÃ·Î¿ì°¡ ÇÊ¿äÇÔ.
+	//ë³¸ë˜ ê±°ìŠ¬ëŸ¬ ì˜¬ë¼ê°€ì„œ InputProc() í•¨ìˆ˜ë¡œ ë˜ëŒì•„ê°„ë‹¤. í•˜ì§€ë§Œ ì—¬ì „íˆ inputProcì€ trueê°’ì´ë‹¤. ë¯¸ì…˜ì¢…ë£Œì— ëŒ€í•œ ì²˜ë¦¬í”Œë¡œìš°ê°€ í•„ìš”í•¨.
 	exit(1);
 }
