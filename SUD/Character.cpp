@@ -9,8 +9,9 @@
 CCharacter::CCharacter(void)
 {
 	m_position.x = m_position.y = 0;
+	m_energy = 100 * m_level;
+	m_damage = 30 * m_level;
 }
-
 
 CCharacter::~CCharacter(void)
 {

@@ -4,6 +4,7 @@
 
 CMonster::CMonster(void)
 {
+
 }
 
 

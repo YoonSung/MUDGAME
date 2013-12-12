@@ -2,6 +2,7 @@
 
 #include "GameMap.h"
 #include "PlayerCharacter.h"
+#include "LogSaver.h"
 
 class CGameManager
 {
@@ -19,6 +20,7 @@ protected:
 protected:
 	CGameMap* m_Map;
 	CPlayerCharacter * m_PC;
+	CLogSaver* m_Loger;
 private:
 	bool IsInput( std::string inputValue, const char* compareValue);
 	void CreateMobs();

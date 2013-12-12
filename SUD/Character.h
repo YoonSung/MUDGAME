@@ -26,5 +26,8 @@ public:
 	void Move ( DIRECTION dir );
 protected:
 	Position m_position;
+	int m_damage;
+	int m_energy;
+	int m_level;
 };
 

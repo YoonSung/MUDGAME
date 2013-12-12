@@ -1,5 +1,6 @@
 #pragma once
 #include "character.h"
+
 class CMonster :
 	public CCharacter
 {

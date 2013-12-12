@@ -1,11 +1,7 @@
 ﻿#include "stdafx.h"
 #include "GameManager.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <windows.h>
-#include <process.h>
-#include <conio.h>
+
+
 
 #define VACANT_SPACE	"□ "
 #define ENEMY_SPACE		"▣ "
@@ -33,6 +29,7 @@ CGameManager::CGameManager(void)
 {
 	m_PC = new CPlayerCharacter();
 	m_Map = new CGameMap();
+	m_Loger = new CLogSaver();
 }
 
 CGameManager::~CGameManager(void)
@@ -232,9 +229,14 @@ void CGameManager::OccurCombat()
 {
 	AutoMapDisPlayOFF();
 	PrintExceptEnemy();
+	
 	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
-	Sleep(3500);
-	system ( CLEAR_MONITOR );
+// 	Sleep(3000);
+// 	//Room 클래스 생성, 현재 플레이어 정보 및 좀비 정보를 전달.
+// 	//화면 하단부에 전투모습 전시, 다른 좀비들이 다가오는 모습도 그대로 노출.
+// 	//상단의 슬립과 맵플레이 함수 없애기
+// 	system ( CLEAR_MONITOR );
+	
 
 	while( InputProcInCombat() );
 
