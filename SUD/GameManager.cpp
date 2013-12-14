@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include "GameManager.h"
+#define SWAP( x, y, temp ) { (temp = x); (x = y); (y = temp );}
 
 //일반변수
 bool m_isAIMovementON = false;
@@ -14,7 +15,7 @@ CGameManager::CGameManager(void)
 	m2_Map = m_Map;
 
 	m_Printer = new CPrinter(*m_PC, *m_Map);
-	
+
 	HWND hWnd = GetConsoleWindow();
 	ShowWindow(hWnd, SW_MAXIMIZE);
 }
@@ -32,7 +33,7 @@ void CGameManager::Init()
 	//게임에 대한 설명부분이 있어야 한다.
 	//난이도, 저장된 목록 불러오기 등이 처리되어야 한다.
 	printf_s ( "[Game Start!!]\n" );
-	srand ( ( unsigned ) time ( NULL ) );
+
 
 	CreateMobs();
 	m_Printer->AutoMapDisplayON();
@@ -61,10 +62,10 @@ bool CGameManager::InputProc()
 	//키보드 입력을 받아서 
 	//커맨드를 파싱하고 실행한다.
 	//esc를 입력받으면 종료된다
-	
-	
+
+
 	char strInput = _getch(); 
-	
+
 
 	if ( strInput == 'w' || strInput == 'W')
 		m_PC->Move(DIR_UP);
@@ -110,6 +111,7 @@ void CGameManager::CreateMobs()
 	char buf [ 32 ] =  { 0, };
 
 	int mobCount = ( MAP_SIZE * MAP_SIZE ) / 4 ;
+	srand ( ( unsigned ) time ( NULL ) );
 
 	while ( mobCount > 0 )
 	{
@@ -150,8 +152,8 @@ void CGameManager::AutoAIMovementOFF()
 
 unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 {
- 	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
-// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
+	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
+	// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
 
 	int PlayerPositionX = pc->GetPositionX();
 	int PlayerPositionY = pc->GetPositionY();
@@ -183,13 +185,13 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					int numToReverse_X = DIR_ARRAY_MAXNUM / 4;
 					int numToReverse_Y = DIR_ARRAY_MAXNUM / 4;
 
-					int Between_Length_X = abs(PlayerPositionX - MonsterPositionX);
-					int Between_Length_Y = abs(PlayerPositionY - MonsterPositionY);
-					int Between_Length_Total = Between_Length_X + Between_Length_Y;
+					int Between_Length_X = PlayerPositionX - MonsterPositionX;
+					int Between_Length_Y = PlayerPositionY - MonsterPositionY;
+					int Between_Length_Total = abs(Between_Length_X + Between_Length_Y);
 
 
-// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
-// 						sleep(1000)
+					// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
+					// 						sleep(1000)
 
 					if ( Between_Length_Total == 0 )
 					{
@@ -244,7 +246,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 
 						//reverse x,y 할당
-						
+
 						numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
 
 					}
@@ -309,11 +311,24 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 						}
 					}
 
+					//배열 셔플.
+					srand ( ( unsigned ) time ( NULL ) );
+					for ( int i = DIR_ARRAY_MAXNUM-1 ; i > 0 ; --i )
+					{
+						DIRECTION temp;
+						int target =  rand()%i;
+						SWAP ( dirArray[i], dirArray[target], temp );
+					}
+
+
 					//test code
 					printf_s("DIR_UP    : 0\n");
 					printf_s("DIR_Down  : 1\n");
 					printf_s("DIR_LEFT  : 2\n");
 					printf_s("DIR_RIGHT : 3\n");
+
+					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
+						printf_s("arr[i] = %d\n", dirArray[i]);
 
 					printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
 					printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
@@ -321,11 +336,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
 					printf_s("reve_X : %d, reve_Y : %d\n\n\n", numToReverse_X, numToReverse_Y);
 
-					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
-						printf_s("arr[i] = %d\n", dirArray[i]);
 					//
-
-
 				}
 			} //for문 x
 		} //for문 y
@@ -337,15 +348,15 @@ void CGameManager::OccurCombat()
 {
 	m_Printer->CombatModeON();
 	//
-//	PrintExceptEnemy();
+	//	PrintExceptEnemy();
 	m_Printer->AddLogBuffer("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
-// 	Sleep(3000);
-// 	//Room 클래스 생성, 현재 플레이어 정보 및 좀비 정보를 전달.
-// 	//화면 오른편에 전투모습 전시, 다른 좀비들이 다가오는 모습도 그대로 노출.
-// 	//상단의 슬립과 맵플레이 함수 없애기
-// 	system ( CLEAR_MONITOR );
-	
+	//	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
+	// 	Sleep(3000);
+	// 	//Room 클래스 생성, 현재 플레이어 정보 및 좀비 정보를 전달.
+	// 	//화면 오른편에 전투모습 전시, 다른 좀비들이 다가오는 모습도 그대로 노출.
+	// 	//상단의 슬립과 맵플레이 함수 없애기
+	// 	system ( CLEAR_MONITOR );
+
 
 	while( InputProcInCombat() );
 }
@@ -364,7 +375,7 @@ bool CGameManager::InputProcInCombat()
 
 
 	m_Printer->AddLogBuffer("현재는 테스트 중이니 '이겼다'를 입력하시면 전투가 종료됩니다.\n" );
-	
+
 
 	printf_s( "명령 => ");
 	getline(std::cin, strInput);
@@ -410,14 +421,14 @@ bool CGameManager::CheckMissionClear()
 	//현재 map_size 끝으로 정해진 미션클리어 장소는 변경이 필요
 	if ( x == MAP_SIZE-1 && y == MAP_SIZE-1 )
 		return true;
-	
+
 	return false;
 }
 
 void CGameManager::EndMission()
 {
 	m_Printer->AutoMapDisPlayOFF();
-//	PrintExceptEnemy();
+	//	PrintExceptEnemy();
 	printf_s ("미션이 종료되었습니다.\n");
 	Sleep(3500);
 	printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
