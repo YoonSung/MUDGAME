@@ -42,7 +42,7 @@
     <ClInclude Include="Room.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="LogSaver.h">
+    <ClInclude Include="Printer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,7 +71,7 @@
     <ClCompile Include="Room.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="LogSaver.cpp">
+    <ClCompile Include="Printer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

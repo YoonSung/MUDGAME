@@ -2,7 +2,7 @@
 
 #include "GameMap.h"
 #include "PlayerCharacter.h"
-#include "LogSaver.h"
+#include "Printer.h"
 
 class CGameManager
 {
@@ -20,13 +20,10 @@ protected:
 protected:
 	CGameMap* m_Map;
 	CPlayerCharacter * m_PC;
-	CLogSaver* m_Loger;
+	CPrinter* m_Printer;
 private:
 	bool IsInput( std::string inputValue, const char* compareValue);
 	void CreateMobs();
-	void AutoMapDisplay();
-	void AutoMapDisplayON();
-	void AutoMapDisPlayOFF();
 	void CheckCombatOccur();
 	void OccurCombat();
 	void EndCombat();
