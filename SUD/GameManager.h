@@ -3,6 +3,7 @@
 #include "GameMap.h"
 #include "PlayerCharacter.h"
 #include "Printer.h"
+#define DIR_ARRAY_MAXNUM 20
 
 class CGameManager
 {

@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 #include "GameManager.h"
 
-
 //일반변수
 bool m_isAIMovementON = false;
 CGameMap* m2_Map;
@@ -122,6 +121,7 @@ void CGameManager::CreateMobs()
 		if ( pMapInfo->pMob == nullptr )
 		{
 			pMapInfo->pMob = new CMonster();
+			pMapInfo->pMob->SetPosition(x, y);
 
 			sprintf_s ( buf, "Mob %d" , mobCount );
 			//pMapInfo->pMob->SetName(buf);
@@ -173,13 +173,18 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					int MonsterPositionX = monster->GetPosition().x;
 					int MonsterPositionY = monster->GetPosition().y;
 
-					int DirectionTogo_X;
-					int DirectionTogo_Y;
-					int DirectionTogoReverse_X;
-					int DirectionTogoReverse_Y;
+					DIRECTION DirectionTogo_X;
+					DIRECTION DirectionTogo_Y;
+					DIRECTION DirectionTogoReverse_X;
+					DIRECTION DirectionTogoReverse_Y;
 
-					int Between_Length_X = PlayerPositionX - MonsterPositionX;
-					int Between_Length_Y = PlayerPositionY - MonsterPositionY;
+					int numTogo_X = DIR_ARRAY_MAXNUM / 4;
+					int numTogo_Y = DIR_ARRAY_MAXNUM / 4;
+					int numToReverse_X = DIR_ARRAY_MAXNUM / 4;
+					int numToReverse_Y = DIR_ARRAY_MAXNUM / 4;
+
+					int Between_Length_X = abs(PlayerPositionX - MonsterPositionX);
+					int Between_Length_Y = abs(PlayerPositionY - MonsterPositionY);
 					int Between_Length_Total = Between_Length_X + Between_Length_Y;
 
 
@@ -188,11 +193,11 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 					if ( Between_Length_Total == 0 )
 					{
-						printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ");
+						printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ\n");
 						//Room으로 add 후 맵에서 삭제.
 						//이 부분은 몬스터가 이동해서 플레이어를 만난경우니까
 						//몬스터가 돌진했습니다 같이 멘트를하자 ㅎ
-						return 0;
+						continue;
 					}
 
 
@@ -221,159 +226,110 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					}	
 
 					//기본 할당수치 5+5 = 10
-					int numberOfAllocation = 10;
-
+					int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
+					int reverse_numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
 
 					if ( Between_Length_Total <= 10 )
 					{
 						numberOfAllocation = 21 - Between_Length_Total;
+						reverse_numberOfAllocation = 20 - numberOfAllocation;
 					}
+
 
 					//할당 받은 개수가 짝수일 경우
 					if ( numberOfAllocation % 2 == 0 )
 					{
 						//togo x,y 할당
-						DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
+						numTogo_X = numTogo_Y = numberOfAllocation / 2;
 
 
 						//reverse x,y 할당
-						int reverse_numberOfAllocation = 20 - numberOfAllocation;
-						DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
+						
+						numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
 
 					}
 					//할당 받은 개수가 홀수일 경우
 					else
 					{
-						//togo x,y 할당
-						if ( DirectionTogo_X > DirectionTogo_Y )
+
+						if ( Between_Length_X < Between_Length_Y )
 						{
-							DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
-							++DirectionTogo_X;
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
+
+							//가까운쪽에 1을 더 더함
+							++numTogo_X;
+
+
+							//reverse x,y 할당
+							numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
+							++numToReverse_X;
 						}
 						else
 						{
-							DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
-							++DirectionTogo_Y;
-						}
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
+							++numTogo_Y;
 
 
-						//reverse x,y 할당
-						int reverse_numberOfAllocation = 20 - numberOfAllocation;
-
-						if ( DirectionTogoReverse_X > DirectionTogoReverse_Y )
-						{
-							DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
-							DirectionTogoReverse_X++;
-						}
-						else
-						{
-							DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
-							DirectionTogoReverse_Y++;
+							//reverse x,y 할당
+							numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
+							++numToReverse_Y;
 						}
 					}
 
-// 					switch ( Between_Length_Total )
-// 					{
-// 					case 10:
-// 						//11개
-// 						break;
-// 					case  9:
-// 						//12개
-// 						break;
-// 					case  8:
-// 						//13개
-// 						break;
-// 					case  7:
-// 						break;
-// 					case  6:
-// 						break;
-// 					case  5:
-// 						break;
-// 					case  4:
-// 						break;
-// 					case  3:
-// 						break;
-// 					case  2:
-// 						break;
-// 					case  1:
-// 						break;
-// 					default:
-// 						break;
-// 						1  : 100% : 20개
-// 							2  :  95% : 19개   
-// 							3  :  90% : 18개
-// 							4  :  85% : 17개
-// 							5  :  80% : 16개
-// 							6  :  75% : 15개
-// 							7  :  70% : 14개
-// 							8  :  65% : 13개
-// 							9  :  60% : 12개
-// 							10 :  55% : 11개
-// 							11 :  50% : 10개 - 일반수준
-// 							12
-// 							13
-// 							14
-// 							15
-// 							16
-// 							17
-// 							18
-			}
-		}
-	}
-}
-	/*
+					DIRECTION dirArray[ DIR_ARRAY_MAXNUM ];
 
 
-	개당 4%
-	5x4 = 20개
+					int i = 0;
+					while ( i < 20)
+					{
+						for ( int j = 0 ; j < numTogo_X ; ++j )
+						{
+							dirArray[i] = DirectionTogo_X;
+							++i;
+						}
+
+						for ( int j = 0 ; j < numTogo_Y ; ++j )
+						{
+							dirArray[i] = DirectionTogo_Y;
+							++i;
+						}
+
+						for ( int j = 0 ; j < numToReverse_X ; ++j )
+						{
+							dirArray[i] = DirectionTogoReverse_X;
+							++i;
+						}
+
+						for ( int j = 0 ; j < numToReverse_Y ; ++j )
+						{
+							dirArray[i] = DirectionTogoReverse_Y;
+							++i;
+						}
+					}
+
+					//test code
+					printf_s("DIR_UP    : 0\n");
+					printf_s("DIR_Down  : 1\n");
+					printf_s("DIR_LEFT  : 2\n");
+					printf_s("DIR_RIGHT : 3\n");
+
+					printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
+					printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
+					printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
+					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
+					printf_s("reve_X : %d, reve_Y : %d\n\n\n", numToReverse_X, numToReverse_Y);
+
+					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
+						printf_s("arr[i] = %d\n", dirArray[i]);
+					//
 
 
-
-	//가로세로를 따로 계산할 경우.
-	10 : 50%
-	     9    8    7    6    5    4    3    2    1    0
-	     20%  30%  %  40%  48%  56%  64%  72%  50%  50% 
-	 동 :5    5    6    6    7    7    8    9   10    5
-	 서 :5    5    4    4    3    3    2    1    0        
-	 남 :5
-	 북 :5
-
-	 아니다... 그냥 길이합으로 해야겠다.
-	 레벨에 따라 필살기 같은 것들이 있어!
-	 뭐 한명없애기, 두명없애기, 모두 다 없애기 같은거
-	 u는 ultral 필살 . p는 필살, i는 일루젼(안보이기. 데미지 안맞기), o
-
-	 길이차이 최소 : 0 -- Room 으로 이관.
-	 길이차이 최소 : 1 -- 100% 확률로 이동
-	 길이차이 최대 : 18
-	
-
-	//x-direction, y-direction
-	//두 항목 중, 더 짧은 쪽을 기준으로 갯수를 더 증가시켜준다.
-	배열은 총 20개,
-
-	1  : 100% : 20개
-	2  :  95% : 19개   
-	3  :  90% : 18개
-	4  :  85% : 17개
-	5  :  80% : 16개
-	6  :  75% : 15개
-	7  :  70% : 14개
-	8  :  65% : 13개
-	9  :  60% : 12개
-	10 :  55% : 11개
-	11 :  50% : 10개 - 일반수준
-	12
-	13
-	14
-	15
-	16
-	17
-	18
-
-
-	캐릭터 방향으로 이동시, 반대편쪽을 -1만큼 개수를 줄인다.
-	*/
+				}
+			} //for문 x
+		} //for문 y
+	} //while문
 	return 0;
 }
 
