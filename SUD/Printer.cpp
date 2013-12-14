@@ -15,8 +15,8 @@ bool m_isCombatOccur;
 std::string m_LogBuffer[10];
 
 //내부함수 선언
-void PrintAllThing();
-void PrintExceptEnemy();
+void _PrintAllThing();
+void _PrintExceptEnemy();
 void _Print(std::string enemySymbol);
 std::string getMapView(std::string enemySymbol);
 
@@ -95,12 +95,17 @@ void CPrinter::CombatModeOFF()
 	m_isCombatOccur = false;
 }
 
-void PrintAllThing() 
+void CPrinter::PrintExceptEnemy()
+{
+	_PrintExceptEnemy();
+}
+
+void _PrintAllThing() 
 {
 	_Print ( ENEMY_SPACE );
 }
 
-void PrintExceptEnemy()
+void _PrintExceptEnemy()
 {
 	_Print ( VACANT_SPACE );
 }
@@ -125,11 +130,11 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 
 		if ( !m_isCombatOccur )
 		{
-			PrintExceptEnemy();
+			_PrintExceptEnemy();
 			Sleep(3000);
 		}
 		
-		PrintAllThing();
+		_PrintAllThing();
 	}
 	return 0;
 }

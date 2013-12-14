@@ -13,7 +13,6 @@ public:
 	void Init();
 	void Run();
 	void Release();
-
 protected:
 	bool InputProc();
 	bool InputProcInCombat();
@@ -30,5 +29,7 @@ private:
 	bool CheckMissionClear();
 	void EndMission();
 	void destroyMonster(int x, int y);
+	void AutoAIMovementON();
+	void AutoAIMovementOFF();
 };
 

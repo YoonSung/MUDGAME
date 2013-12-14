@@ -17,5 +17,6 @@ public:
 	void AutoMapDisPlayOFF();
 	void CombatModeON();
 	void CombatModeOFF();
+	void PrintExceptEnemy();
 };
 

@@ -2,29 +2,22 @@
 #include "GameManager.h"
 
 
-//□▣★♥
-
-
-CGameMap* h_Map = nullptr;
-CPlayerCharacter* h_PC = nullptr;
-
-unsigned int WINAPI ThreadProc( LPVOID lpParam );
-
-// agebreak : 아래 함수들은 클래스의 멤버 함수로 만들도록 합니다. 일반 함수를 사용하는것은 좋지 않습니다.
-void PrintExceptEnemy();
-void PrintAllThing() ;
-void _Print(char endXPos, char endYPos, std::string enemySpot);
-
-
+//일반변수
+bool m_isAIMovementON = false;
+CGameMap* m2_Map;
+//일반함수
+unsigned int WINAPI MonstersAIMove( LPVOID pc );
 
 CGameManager::CGameManager(void)
 {
 	m_PC = new CPlayerCharacter();
 	m_Map = new CGameMap();
-	m_Printer = new CPrinter(*m_PC, *m_Map);
+	m2_Map = m_Map;
 
-	//HWND hWnd = GetConsoleWindow();
-	//ShowWindow(hWnd, SW_MAXIMIZE);
+	m_Printer = new CPrinter(*m_PC, *m_Map);
+	
+	HWND hWnd = GetConsoleWindow();
+	ShowWindow(hWnd, SW_MAXIMIZE);
 }
 
 CGameManager::~CGameManager(void)
@@ -44,6 +37,7 @@ void CGameManager::Init()
 
 	CreateMobs();
 	m_Printer->AutoMapDisplayON();
+	AutoAIMovementON();
 	m_PC->SetPosition( 0, 0 );
 }
 
@@ -71,6 +65,7 @@ bool CGameManager::InputProc()
 	
 	
 	char strInput = _getch(); 
+	
 
 	if ( strInput == 'w' || strInput == 'W')
 		m_PC->Move(DIR_UP);
@@ -81,9 +76,8 @@ bool CGameManager::InputProc()
 	if ( strInput == 'd' || strInput == 'D')
 		m_PC->Move ( DIR_RIGHT ) ;
 
+	m_Printer->PrintExceptEnemy();
 	//화살표로 변경예정. esc로 환경설정 페이지에 대한 추가사항 필요
-
-	PrintExceptEnemy();
 	return true;
 }
 
@@ -136,16 +130,258 @@ void CGameManager::CreateMobs()
 		}
 	}
 
-	printf_s ( "<< Mob Create Complete! >>\n" );
+	//printf_s ( "<< Mob Create Complete! >>\n" );
 }
 
+void CGameManager::AutoAIMovementON()
+{
+	DWORD dwThreadId;
+	HANDLE hThread;
+	m_isAIMovementON = true;
 
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, MonstersAIMove, m_PC, 0, ( unsigned int* )&dwThreadId );
+	CloseHandle ( hThread );
+};
+
+void CGameManager::AutoAIMovementOFF()
+{
+	m_isAIMovementON = false;
+}
+
+unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
+{
+ 	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
+// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
+
+	int PlayerPositionX = pc->GetPositionX();
+	int PlayerPositionY = pc->GetPositionY();
+
+	while ( m_isAIMovementON )
+	{
+		Sleep(2000);
+
+		for ( int x = 0 ; x < MAP_SIZE ; ++x ) 
+		{
+			for ( int y = 0 ; y < MAP_SIZE ; ++y )
+			{
+				MapInfo* pMapInfo = m2_Map->GetMapInfo( x, y );
+
+				if ( pMapInfo->pMob != nullptr )
+				{
+					CMonster* monster = pMapInfo->pMob;
+
+					int MonsterPositionX = monster->GetPosition().x;
+					int MonsterPositionY = monster->GetPosition().y;
+
+					int DirectionTogo_X;
+					int DirectionTogo_Y;
+					int DirectionTogoReverse_X;
+					int DirectionTogoReverse_Y;
+
+					int Between_Length_X = PlayerPositionX - MonsterPositionX;
+					int Between_Length_Y = PlayerPositionY - MonsterPositionY;
+					int Between_Length_Total = Between_Length_X + Between_Length_Y;
+
+
+// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
+// 						sleep(1000)
+
+					if ( Between_Length_Total == 0 )
+					{
+						printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ");
+						//Room으로 add 후 맵에서 삭제.
+						//이 부분은 몬스터가 이동해서 플레이어를 만난경우니까
+						//몬스터가 돌진했습니다 같이 멘트를하자 ㅎ
+						return 0;
+					}
+
+
+					//플레이어가 몬스터보다 오른편에 존재.
+					if ( Between_Length_X > 0 )
+					{
+						DirectionTogo_X = DIR_RIGHT;
+						DirectionTogoReverse_X = DIR_LEFT;
+					}
+					else
+					{
+						DirectionTogo_X = DIR_LEFT;
+						DirectionTogoReverse_X = DIR_RIGHT;
+					}
+
+					//플레이어가 몬스터보다 아래쪽에 있으면
+					if ( Between_Length_Y > 0 )
+					{
+						DirectionTogo_Y = DIR_DOWN;
+						DirectionTogoReverse_Y = DIR_UP;
+					}
+					else
+					{
+						DirectionTogo_Y = DIR_UP; 
+						DirectionTogoReverse_Y = DIR_DOWN;
+					}	
+
+					//기본 할당수치 5+5 = 10
+					int numberOfAllocation = 10;
+
+
+					if ( Between_Length_Total <= 10 )
+					{
+						numberOfAllocation = 21 - Between_Length_Total;
+					}
+
+					//할당 받은 개수가 짝수일 경우
+					if ( numberOfAllocation % 2 == 0 )
+					{
+						//togo x,y 할당
+						DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
+
+
+						//reverse x,y 할당
+						int reverse_numberOfAllocation = 20 - numberOfAllocation;
+						DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
+
+					}
+					//할당 받은 개수가 홀수일 경우
+					else
+					{
+						//togo x,y 할당
+						if ( DirectionTogo_X > DirectionTogo_Y )
+						{
+							DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
+							++DirectionTogo_X;
+						}
+						else
+						{
+							DirectionTogo_X = DirectionTogo_Y = numberOfAllocation / 2;
+							++DirectionTogo_Y;
+						}
+
+
+						//reverse x,y 할당
+						int reverse_numberOfAllocation = 20 - numberOfAllocation;
+
+						if ( DirectionTogoReverse_X > DirectionTogoReverse_Y )
+						{
+							DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
+							DirectionTogoReverse_X++;
+						}
+						else
+						{
+							DirectionTogoReverse_X = DirectionTogoReverse_Y = reverse_numberOfAllocation / 2;
+							DirectionTogoReverse_Y++;
+						}
+					}
+
+// 					switch ( Between_Length_Total )
+// 					{
+// 					case 10:
+// 						//11개
+// 						break;
+// 					case  9:
+// 						//12개
+// 						break;
+// 					case  8:
+// 						//13개
+// 						break;
+// 					case  7:
+// 						break;
+// 					case  6:
+// 						break;
+// 					case  5:
+// 						break;
+// 					case  4:
+// 						break;
+// 					case  3:
+// 						break;
+// 					case  2:
+// 						break;
+// 					case  1:
+// 						break;
+// 					default:
+// 						break;
+// 						1  : 100% : 20개
+// 							2  :  95% : 19개   
+// 							3  :  90% : 18개
+// 							4  :  85% : 17개
+// 							5  :  80% : 16개
+// 							6  :  75% : 15개
+// 							7  :  70% : 14개
+// 							8  :  65% : 13개
+// 							9  :  60% : 12개
+// 							10 :  55% : 11개
+// 							11 :  50% : 10개 - 일반수준
+// 							12
+// 							13
+// 							14
+// 							15
+// 							16
+// 							17
+// 							18
+			}
+		}
+	}
+}
+	/*
+
+
+	개당 4%
+	5x4 = 20개
+
+
+
+	//가로세로를 따로 계산할 경우.
+	10 : 50%
+	     9    8    7    6    5    4    3    2    1    0
+	     20%  30%  %  40%  48%  56%  64%  72%  50%  50% 
+	 동 :5    5    6    6    7    7    8    9   10    5
+	 서 :5    5    4    4    3    3    2    1    0        
+	 남 :5
+	 북 :5
+
+	 아니다... 그냥 길이합으로 해야겠다.
+	 레벨에 따라 필살기 같은 것들이 있어!
+	 뭐 한명없애기, 두명없애기, 모두 다 없애기 같은거
+	 u는 ultral 필살 . p는 필살, i는 일루젼(안보이기. 데미지 안맞기), o
+
+	 길이차이 최소 : 0 -- Room 으로 이관.
+	 길이차이 최소 : 1 -- 100% 확률로 이동
+	 길이차이 최대 : 18
+	
+
+	//x-direction, y-direction
+	//두 항목 중, 더 짧은 쪽을 기준으로 갯수를 더 증가시켜준다.
+	배열은 총 20개,
+
+	1  : 100% : 20개
+	2  :  95% : 19개   
+	3  :  90% : 18개
+	4  :  85% : 17개
+	5  :  80% : 16개
+	6  :  75% : 15개
+	7  :  70% : 14개
+	8  :  65% : 13개
+	9  :  60% : 12개
+	10 :  55% : 11개
+	11 :  50% : 10개 - 일반수준
+	12
+	13
+	14
+	15
+	16
+	17
+	18
+
+
+	캐릭터 방향으로 이동시, 반대편쪽을 -1만큼 개수를 줄인다.
+	*/
+	return 0;
+}
 
 void CGameManager::OccurCombat()
 {
 	m_Printer->CombatModeON();
 	//
-	PrintExceptEnemy();
+//	PrintExceptEnemy();
 	m_Printer->AddLogBuffer("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 //	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
 // 	Sleep(3000);
@@ -225,7 +461,7 @@ bool CGameManager::CheckMissionClear()
 void CGameManager::EndMission()
 {
 	m_Printer->AutoMapDisPlayOFF();
-	PrintExceptEnemy();
+//	PrintExceptEnemy();
 	printf_s ("미션이 종료되었습니다.\n");
 	Sleep(3500);
 	printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
