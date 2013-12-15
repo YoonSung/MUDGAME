@@ -3,7 +3,7 @@
 
 
 //#define ZERO_MEMORY(mem, size) memset(mem, 0, size)
-
+CGameMap* CGameMap::instance; //static 변수 참조를 위한 선언
 MapInfo mapInfo;
 
 CGameMap::CGameMap(void)
@@ -12,6 +12,19 @@ CGameMap::CGameMap(void)
 	//ZERO_MEMORY(m_MapInfo, sizeof(m_MapInfo);
 }
 
+CGameMap* CGameMap::getInstancePtr()
+{
+	if ( instance == nullptr )
+	{
+		instance = new CGameMap();
+	}
+	return instance;
+}
+
+void CGameMap::releaseInstance()
+{
+	delete instance;
+}
 
 CGameMap::~CGameMap(void)
 {

@@ -11,7 +11,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID pc );
 CGameManager::CGameManager(void)
 {
 	m_PC = new CPlayerCharacter();
-	m_Map = new CGameMap();
+	m_Map = CGameMap::getInstancePtr();
 	m2_Map = m_Map;
 
 	m_Printer = new CPrinter(*m_PC, *m_Map);
@@ -23,7 +23,7 @@ CGameManager::CGameManager(void)
 CGameManager::~CGameManager(void)
 {
 	delete m_PC;
-	delete m_Map;
+	CGameMap::releaseInstance();
 	delete m_Printer;
 	// agebreak : 생성한 m_Map을 해제하지 않아서, 메모리릭이 발생합니다.
 }
@@ -320,7 +320,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 						SWAP ( dirArray[i], dirArray[target], temp );
 					}
 
-
+					/*
 					//test code
 					printf_s("DIR_UP    : 0\n");
 					printf_s("DIR_Down  : 1\n");
@@ -336,7 +336,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
 					printf_s("reve_X : %d, reve_Y : %d\n\n\n", numToReverse_X, numToReverse_Y);
 
-					//
+					//*/
 				}
 			} //for문 x
 		} //for문 y
