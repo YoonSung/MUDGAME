@@ -20,10 +20,10 @@ public:
 	CCharacter ( void );
 	virtual ~CCharacter ( void );
 
-	void SetPosition ( Position pos );
-	void SetPosition (int x, int y);
+	virtual void SetPosition ( Position pos );
+	virtual void SetPosition (int x, int y);
 	Position GetPosition(){return m_position;};
-	void Move ( DIRECTION dir );
+	virtual void Move ( DIRECTION dir );
 protected:
 	Position m_position;
 	int m_damage;

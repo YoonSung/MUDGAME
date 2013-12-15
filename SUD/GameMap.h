@@ -10,8 +10,6 @@ struct MapInfo
 class CGameMap
 {
 public:
-
-
 	MapInfo* GetMapInfo ( int x, int y );
 	static CGameMap* getInstancePtr();
 	static void releaseInstance();

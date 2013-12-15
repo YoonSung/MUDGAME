@@ -130,8 +130,8 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 
 		if ( !m_isCombatOccur )
 		{
-			_PrintExceptEnemy();
-			Sleep(3000);
+			//_PrintExceptEnemy();
+			//Sleep(3000);
 		}
 		
 		_PrintAllThing();
