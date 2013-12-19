@@ -133,7 +133,6 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 			//_PrintExceptEnemy();
 			//Sleep(3000);
 		}
-		
 		_PrintAllThing();
 	}
 	return 0;

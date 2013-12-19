@@ -1,4 +1,4 @@
-﻿빌드 시작: 2013-12-16 오전 1:38:08
+﻿빌드 시작: 2013-12-19 오후 7:59:50
      1>2 노드의 "C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\MUDGAME\SUD\SUD.vcxproj" 프로젝트(Build 대상)입니다.
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt GameManager.cpp
@@ -18,4 +18,4 @@
 
 빌드했습니다.
 
-경과 시간: 00:00:02.89
+경과 시간: 00:00:02.56

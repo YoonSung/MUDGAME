@@ -22,22 +22,57 @@ CMonster::~CMonster(void) {}
 void CMonster::Move ( DIRECTION dir )
 {
 	
-	printf("b_position : %d, %d\n",m_position.x, m_position.y);
+	//printf("b_position : %d, %d\n",m_position.x, m_position.y);
 	MapInfo* mInfo = m_Map->GetMapInfo( m_position.x, m_position.y );
 	//m_Map->deleteMopInMapInfo( m_position.x, m_position.y );
 	//delete (mInfo->pMob);
-	mInfo->pMob = nullptr;
 
-	__super::Move( dir );
+	int moveTogo_X = m_position.x;
+	int moveTogo_Y = m_position.y;
+
+
+	switch ( dir )
+	{
+	case DIR_UP:
+		if ( moveTogo_Y == 9 )
+			return;
+		++moveTogo_Y;
+		break;
+	case DIR_DOWN:
+		if ( moveTogo_Y == 0 )
+			return;
+		--moveTogo_Y;
+		break;
+	case DIR_LEFT:
+		if ( moveTogo_X == 0 )
+			return;
+		--moveTogo_X;
+		break;
+	case DIR_RIGHT:
+		if ( moveTogo_X == 9 )
+			return;
+		++moveTogo_X;
+		break;
+	}
+
+
+
 	
-	printf("a_position : %d, %d\n",m_position.x, m_position.y);
-	MapInfo* targetMapInfo = m_Map->GetMapInfo( m_position.x, m_position.y );
+	//printf("a_position : %d, %d\n",m_position.x, m_position.y);
+	MapInfo* targetMapInfo = m_Map->GetMapInfo( moveTogo_X, moveTogo_Y );
 
 	if ( targetMapInfo->pMob != nullptr )
+	{
 		return;
+	}
 	else
+	{
+		mInfo->pMob = nullptr;
 		targetMapInfo->pMob = this;
-
+		SetPosition ( moveTogo_X, moveTogo_Y);
+	}
+	
+	//__super::Move( dir );
 	//printf("position : %d, %d\n",m_position.x, m_position.y);
 }
 

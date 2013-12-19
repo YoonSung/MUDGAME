@@ -153,9 +153,6 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
 	// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
 
-	int PlayerPositionX = pc->GetPositionX();
-	int PlayerPositionY = pc->GetPositionY();
-
 	while ( m_isAIMovementON )
 	{
 		Sleep(1500);
@@ -179,7 +176,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 			}
 		}
 
-
+		//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
 		while ( index>=1 )
 		{
 			CMonster* monster = monsters[index-1];
@@ -197,9 +194,9 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 			int numToReverse_X = DIR_ARRAY_MAXNUM / 4;
 			int numToReverse_Y = DIR_ARRAY_MAXNUM / 4;
 
-			int Between_Length_X = PlayerPositionX - MonsterPositionX;
-			int Between_Length_Y = PlayerPositionY - MonsterPositionY;
-			int Between_Length_Total = abs(Between_Length_X + Between_Length_Y);
+			int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
+			int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
+			int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
 
 
 			// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
@@ -216,7 +213,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 
 			//플레이어가 몬스터보다 오른편에 존재.
-			if ( Between_Length_X > 0 )
+			if ( Between_Length_X >= 0 )
 			{
 				DirectionTogo_X = DIR_RIGHT;
 				DirectionTogoReverse_X = DIR_LEFT;
@@ -228,7 +225,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 			}
 
 			//플레이어가 몬스터보다 아래쪽에 있으면
-			if ( Between_Length_Y > 0 )
+			if ( Between_Length_Y >= 0 )
 			{
 				DirectionTogo_Y = DIR_DOWN;
 				DirectionTogoReverse_Y = DIR_UP;
@@ -243,10 +240,10 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 			int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
 			int reverse_numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
 
-			if ( Between_Length_Total <= 10 )
+			if ( Between_Length_Total <= 15 )
 			{
-				numberOfAllocation = 21 - Between_Length_Total;
-				reverse_numberOfAllocation = 20 - numberOfAllocation;
+				numberOfAllocation = 21 - Between_Length_Total;//21 - Between_Length_Total;
+				reverse_numberOfAllocation = 20 - numberOfAllocation;//20 - numberOfAllocation;
 			}
 
 
@@ -332,7 +329,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 				SWAP ( dirArray[i], dirArray[target], temp );
 			}
 
-			/*
+			
 			//test code
 			printf_s("DIR_UP    : 0\n");
 			printf_s("DIR_Down  : 1\n");
@@ -341,17 +338,16 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 			for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
 				printf_s("arr[i] = %d\n", dirArray[i]);
-
+			
 			printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
 			printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
 			printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
 			printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
 			printf_s("reve_X : %d, reve_Y : %d\n\n\n", numToReverse_X, numToReverse_Y);
+			
 
-			//*/
-					
 			monster->Move(dirArray[0]);
-
+			Sleep(50);
 			--index;
 		}
 	} //while문
