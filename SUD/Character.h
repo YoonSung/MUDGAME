@@ -8,6 +8,7 @@ struct Position
 
 enum DIRECTION
 {
+	NONE,
 	DIR_UP,
 	DIR_DOWN,
 	DIR_LEFT,

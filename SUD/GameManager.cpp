@@ -155,7 +155,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 	while ( m_isAIMovementON )
 	{
-		Sleep(1500);
+		Sleep(6100);
 
 		CMonster* monsters[MAP_SIZE*MAP_SIZE];
 		memset(monsters, 0, MAP_SIZE*MAP_SIZE);
@@ -179,178 +179,165 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 		//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
 		while ( index>=1 )
 		{
+			//최종적으로 이동할 위치를 담을 변수
+			DIRECTION DirectionTogo_Result = NONE;
+
 			CMonster* monster = monsters[index-1];
 
-			int MonsterPositionX = monster->GetPosition().x;
-			int MonsterPositionY = monster->GetPosition().y;
+			float MovementWeight = 0.9f; //20% 가중치
+			float MovementDeterminant = ((double) rand() / (RAND_MAX));
 
-			DIRECTION DirectionTogo_X;
-			DIRECTION DirectionTogo_Y;
-			DIRECTION DirectionTogoReverse_X;
-			DIRECTION DirectionTogoReverse_Y;
-
-			int numTogo_X = DIR_ARRAY_MAXNUM / 4;
-			int numTogo_Y = DIR_ARRAY_MAXNUM / 4;
-			int numToReverse_X = DIR_ARRAY_MAXNUM / 4;
-			int numToReverse_Y = DIR_ARRAY_MAXNUM / 4;
-
-			int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
-			int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
-			int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
-
-
-			// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
-			// 						sleep(1000)
-
-			if ( Between_Length_Total == 0 )
+			if ( MovementWeight < MovementDeterminant )
 			{
-				printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ\n");
-				//Room으로 add 후 맵에서 삭제.
-				//이 부분은 몬스터가 이동해서 플레이어를 만난경우니까
-				//몬스터가 돌진했습니다 같이 멘트를하자 ㅎ
-				continue;
-			}
-
-
-			//플레이어가 몬스터보다 오른편에 존재.
-			if ( Between_Length_X >= 0 )
-			{
-				DirectionTogo_X = DIR_RIGHT;
-				DirectionTogoReverse_X = DIR_LEFT;
+				DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
+				DirectionTogo_Result = possibleTogo[(int)((double) rand() / (RAND_MAX))*4];
+				
 			}
 			else
 			{
-				DirectionTogo_X = DIR_LEFT;
-				DirectionTogoReverse_X = DIR_RIGHT;
-			}
+				int MonsterPositionX = monster->GetPosition().x;
+				int MonsterPositionY = monster->GetPosition().y;
 
-			//플레이어가 몬스터보다 아래쪽에 있으면
-			if ( Between_Length_Y >= 0 )
-			{
-				DirectionTogo_Y = DIR_DOWN;
-				DirectionTogoReverse_Y = DIR_UP;
-			}
-			else
-			{
-				DirectionTogo_Y = DIR_UP; 
-				DirectionTogoReverse_Y = DIR_DOWN;
-			}	
+				DIRECTION DirectionTogo_X = NONE;
+				DIRECTION DirectionTogo_Y = NONE;
 
-			//기본 할당수치 5+5 = 10
-			int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
-			int reverse_numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
+				int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
+				int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
+				int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
 
-			if ( Between_Length_Total <= 15 )
-			{
-				numberOfAllocation = 21 - Between_Length_Total;//21 - Between_Length_Total;
-				reverse_numberOfAllocation = 20 - numberOfAllocation;//20 - numberOfAllocation;
-			}
+				// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
+				// 						sleep(1000)
 
-
-			//할당 받은 개수가 짝수일 경우
-			if ( numberOfAllocation % 2 == 0 )
-			{
-				//togo x,y 할당
-				numTogo_X = numTogo_Y = numberOfAllocation / 2;
-
-
-				//reverse x,y 할당
-
-				numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
-
-			}
-			//할당 받은 개수가 홀수일 경우
-			else
-			{
-
-				if ( Between_Length_X < Between_Length_Y )
+				if ( Between_Length_Total == 0 )
 				{
-					//togo x,y 할당
-					numTogo_X = numTogo_Y = numberOfAllocation / 2;
-
-					//가까운쪽에 1을 더 더함
-					++numTogo_X;
-
-
-					//reverse x,y 할당
-					numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
-					++numToReverse_X;
-				}
-				else
-				{
-					//togo x,y 할당
-					numTogo_X = numTogo_Y = numberOfAllocation / 2;
-					++numTogo_Y;
-
-
-					//reverse x,y 할당
-					numToReverse_X = numToReverse_Y = reverse_numberOfAllocation / 2;
-					++numToReverse_Y;
-				}
-			}
-
-			DIRECTION dirArray[ DIR_ARRAY_MAXNUM ];
-
-
-			int i = 0;
-			while ( i < 20)
-			{
-				for ( int j = 0 ; j < numTogo_X ; ++j )
-				{
-					dirArray[i] = DirectionTogo_X;
-					++i;
+					printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ\n");
+					//Room으로 add 후 맵에서 삭제.
+					//이 부분은 몬스터가 이동해서 플레이어를 만난경우니까
+					//몬스터가 돌진했습니다 같이 멘트를하자 ㅎ
+					continue;
 				}
 
-				for ( int j = 0 ; j < numTogo_Y ; ++j )
+				//플레이어가 몬스터보다 오른편에 존재.
+				if ( Between_Length_X > 0 )
 				{
-					dirArray[i] = DirectionTogo_Y;
-					++i;
+					DirectionTogo_X = DIR_RIGHT;
+				}
+				else if ( Between_Length_X < 0 )
+				{
+					DirectionTogo_X = DIR_LEFT;
 				}
 
-				for ( int j = 0 ; j < numToReverse_X ; ++j )
+				//플레이어가 몬스터보다 아래쪽에 있으면
+				if ( Between_Length_Y > 0 )
 				{
-					dirArray[i] = DirectionTogoReverse_X;
-					++i;
+					DirectionTogo_Y = DIR_DOWN;
 				}
-
-				for ( int j = 0 ; j < numToReverse_Y ; ++j )
+				else if ( Between_Length_Y < 0 )
 				{
-					dirArray[i] = DirectionTogoReverse_Y;
-					++i;
-				}
-			}
+					DirectionTogo_Y = DIR_UP; 
+				}	
 
-			//배열 셔플.
-			srand ( ( unsigned ) time ( NULL ) );
-			for ( int i = DIR_ARRAY_MAXNUM-1 ; i > 0 ; --i )
-			{
-				DIRECTION temp;
-				int target =  rand()%i;
-				SWAP ( dirArray[i], dirArray[target], temp );
-			}
-
+				//기본 할당수치 5+5 = 10
+				int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
 			
-			//test code
-			printf_s("DIR_UP    : 0\n");
-			printf_s("DIR_Down  : 1\n");
-			printf_s("DIR_LEFT  : 2\n");
-			printf_s("DIR_RIGHT : 3\n");
+				//같은행, 또는 같은열에 없는경우.
+				if ( DirectionTogo_X != NONE && DirectionTogo_Y != NONE )
+				{
+					int numTogo_X = DIR_ARRAY_MAXNUM / 4;
+					int numTogo_Y = DIR_ARRAY_MAXNUM / 4;
 
-			for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
-				printf_s("arr[i] = %d\n", dirArray[i]);
-			
-			printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
-			printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
-			printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
-			printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
-			printf_s("reve_X : %d, reve_Y : %d\n\n\n", numToReverse_X, numToReverse_Y);
-			
+					if ( Between_Length_Total <= 15 )
+					{
+						numberOfAllocation = 21 - Between_Length_Total;//21 - Between_Length_Total;
+					}
 
-			monster->Move(dirArray[0]);
-			Sleep(50);
+					//할당 받은 개수가 짝수일 경우
+					if ( numberOfAllocation % 2 == 0 )
+					{
+						//togo x,y 할당
+						numTogo_X = numTogo_Y = numberOfAllocation / 2;
+					}
+
+					//할당 받은 개수가 홀수일 경우
+					else
+					{
+						if ( Between_Length_X < Between_Length_Y )
+						{
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
+
+							//가까운쪽에 1을 더 더함
+							++numTogo_X;
+						}
+						else
+						{
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
+							++numTogo_Y;
+						}
+					}
+
+					DIRECTION dirArray[ DIR_ARRAY_MAXNUM ];
+
+					int i = 0;
+					while ( i < 20)
+					{
+						for ( int j = 0 ; j < numTogo_X ; ++j )
+						{
+							dirArray[i] = DirectionTogo_X;
+							++i;
+						}
+
+						for ( int j = 0 ; j < numTogo_Y ; ++j )
+						{
+							dirArray[i] = DirectionTogo_Y;
+							++i;
+						}
+					}
+
+					//배열 셔플.
+					srand ( ( unsigned ) time ( NULL ) );
+					for ( int i = DIR_ARRAY_MAXNUM-1 ; i > 0 ; --i )
+					{
+						DIRECTION temp;
+						int target =  rand()%i;
+						SWAP ( dirArray[i], dirArray[target], temp );
+					}
+					DirectionTogo_Result = dirArray[ rand() % DIR_ARRAY_MAXNUM ];
+			
+					//test code
+					printf_s("DIR_UP    : 1\n");
+					printf_s("DIR_Down  : 2\n");
+					printf_s("DIR_LEFT  : 3\n");
+					printf_s("DIR_RIGHT : 4\n\n");
+					/*
+					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
+						printf_s("arr[i] = %d\n", dirArray[i]);
+			
+					printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
+					printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
+					*/
+					printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
+					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
+
+				} else {
+					if ( DirectionTogo_X == NONE )
+						DirectionTogo_Result = DirectionTogo_Y;
+					else 
+						DirectionTogo_Result = DirectionTogo_X;
+				}
+			}
+			printf_s("MovementWeight : %f\n", MovementWeight );
+			printf_s("MovementDeterminant : %f\n", MovementDeterminant );
+
+
+			printf_s("DirectionTogo_Result : %d\n", DirectionTogo_Result );
+			monster->Move( DirectionTogo_Result );
+			
+			Sleep(50); //몬스터별로 이동하는 시간을 다르게 하고 싶어서 넣은 sleep문
 			--index;
-		}
-	} //while문
+		}//맵 전체의 몬스터들을 한번씩 이동시키는  while문
+	} //주기적으로 AIMovement를 시행하는 while 문, movementOn 이라는 flag를 통해서 수행된다.
 	return 0;
 }
 

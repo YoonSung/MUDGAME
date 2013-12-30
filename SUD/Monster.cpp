@@ -33,15 +33,17 @@ void CMonster::Move ( DIRECTION dir )
 
 	switch ( dir )
 	{
+	case NONE:
+		return;
 	case DIR_UP:
 		if ( moveTogo_Y == 9 )
 			return;
-		++moveTogo_Y;
+		--moveTogo_Y;
 		break;
 	case DIR_DOWN:
 		if ( moveTogo_Y == 0 )
 			return;
-		--moveTogo_Y;
+		++moveTogo_Y;
 		break;
 	case DIR_LEFT:
 		if ( moveTogo_X == 0 )

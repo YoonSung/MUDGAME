@@ -126,7 +126,7 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 
 	while ( m_Flag )
 	{
-		Sleep(500);
+		Sleep(6000);
 
 		if ( !m_isCombatOccur )
 		{
