@@ -5,8 +5,10 @@
 
 //일반변수
 bool m_isAIMovementON = false;
+bool m_IsCombatOccur = false;
 CGameMap* m2_Map;
 CRoom* m2_Room;
+
 //일반함수
 unsigned int WINAPI MonstersAIMove( LPVOID pc );
 
@@ -21,11 +23,10 @@ CGameManager::CGameManager(void)
 	m_Room = CRoom::getInstancePtr();
 	m2_Room = m_Room;
 
-	m_Printer = new CPrinter(*m_PC, *m_Map);
-
+	m_Printer = new CPrinter(*m_PC);
 
 	HWND hWnd = GetConsoleWindow();
-	ShowWindow(hWnd, SW_MAXIMIZE);
+	ShowWindow(hWnd, SW_SHOWMAXIMIZED);//SW_MAXIMIZE);
 }
 
 CGameManager::~CGameManager(void)
@@ -55,7 +56,11 @@ void CGameManager::Run()
 		if ( CheckMissionClear() )
 			EndMission();
 
-		CheckCombatOccur();
+		if ( m_IsCombatOccur )
+		{
+			OccurCombat();
+			EndCombat();
+		}
 	}
 }
 
@@ -170,7 +175,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 	while ( m_isAIMovementON )
 	{
-		Sleep(6100);
+		Sleep(2100);
 
 		CMonster* monsters[MAP_SIZE*MAP_SIZE];
 		memset(monsters, 0, MAP_SIZE*MAP_SIZE);
@@ -225,11 +230,16 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 				if ( Between_Length_Total == 0 )
 				{
+
+					m_IsCombatOccur = true;
 					printf_s("Room으로 좀비가 돌진합니다.\n");
 					MapInfo* test = m2_Map->GetMapInfo(MonsterPositionX, MonsterPositionY);
+					
+					//기존의 맵에서 좀비 삭제
 					test->pMob = nullptr;
 					monsters[index-1] = nullptr;
 					m2_Room->addMonster(*monster);
+
 
 					continue;
 				}
@@ -362,9 +372,6 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 void CGameManager::OccurCombat()
 {
 	m_Printer->CombatModeON();
-	m_Room->addPlayer(*m_PC);
-
-
 	//
 	//	PrintExceptEnemy();
 	m_Printer->AddLogBuffer("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

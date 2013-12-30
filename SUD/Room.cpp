@@ -19,11 +19,9 @@ void CRoom::releaseInstance()
 	delete instance;
 }
 
-
-void CRoom::addPlayer(CPlayerCharacter& player)
+CPlayerCharacter* CRoom::getPlayer()
 {
-	m_Player = &player;
-	printf_s("m_PC in Room : %x\n", &player);
+	return m_Player;
 }
 
 bool CRoom::addMonster(CMonster& monster)
@@ -31,12 +29,15 @@ bool CRoom::addMonster(CMonster& monster)
 	monster.SetPosition(MAP_SIZE-1, MAP_SIZE-1);
 
 	bool isAdded = false;
+	
+	Position monster_pos = monster.GetPosition();
+	MapInfo* tempMapInfo = GetMapInfo( monster_pos.x, monster_pos.y);
 
 	for ( int index = 0 ; index < MAX_MONSTER_NUM ; ++index )
 	{
-		if ( m_Monster[index] == NULL )
+		if ( tempMapInfo->pMob == nullptr )
 		{
-			m_Monster[index] = &monster;
+			tempMapInfo->pMob = &monster;
 			isAdded = true;
 			break;
 		}
@@ -45,18 +46,18 @@ bool CRoom::addMonster(CMonster& monster)
 	return isAdded;
 }
 
+
 CRoom::CRoom(void)
 {
-	memset(m_Monster, NULL, MAX_MONSTER_NUM);
-	StartCatchMeIfYouCan();
+	m_Player = new CPlayerCharacter();
+	m_Player->SetPosition(4,5);
 }
 
 void CRoom::StartCatchMeIfYouCan()
 {
-
 }
 
 CRoom::~CRoom(void)
 {
-	//메모리 반환코드 필요하다.
+	delete m_Player;
 }

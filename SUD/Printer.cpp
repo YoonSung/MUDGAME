@@ -5,14 +5,21 @@
 #define ENEMY_SPACE		"▣ "
 #define TARGET_SPACE	"♥ "
 #define PLAYER_SPACE	"★ "
-#define NEWLINE			"\n\n"
+#define NEWLINE_TWICE	"\n\n"
 #define CLEAR_MONITOR	"cls"
+#define NEWLINE			"\n"
+#define TAP				"\t\t\t"
 
+
+//print 일반함수에서 다루어야 하기 때문에 일반변수로 선언.
 bool m_Flag = true;
 CPlayerCharacter* _m_PC;
-CGameMap* _m_Map;	
+CPlayerCharacter* _m_PC_Room;
+CGameMap* _m_Map;
 bool m_isCombatOccur;
 std::string m_LogBuffer[10];
+CRoom* _m_Room;
+
 
 //내부함수 선언
 void _PrintAllThing();
@@ -67,15 +74,36 @@ std::string getMapView(std::string enemySymbol)
 
 			MapInfo* pMapInfo = _m_Map->GetMapInfo( x, y );
 
+			//기존의 왼쪽맵
 			if ( pMapInfo->pMob == nullptr )
 				view.append ( VACANT_SPACE );
 			else
 				view.append ( enemySymbol );
 		}
-		view.append ( NEWLINE );
+		
+		//만약 전투가 시작되면 오른쪽 맵도 보여준다.
+		if ( m_isCombatOccur )
+		{
+			view.append( TAP );
+
+			for ( int x = 0 ; x < MAP_SIZE ; ++x )
+			{
+				if ( _m_PC_Room->GetPositionY() == y && _m_PC_Room->GetPositionX() == x )
+				{
+					view.append ( PLAYER_SPACE );
+					continue;
+				}
+
+				MapInfo* pRoomMapInfo = CRoom::getInstancePtr()->GetMapInfo( x, y );
+
+				if ( pRoomMapInfo->pMob == nullptr )
+					view.append ( VACANT_SPACE );
+				else
+					view.append ( enemySymbol );
+			}
+		}
+		view.append ( NEWLINE_TWICE );
 	}
-	view.append( NEWLINE );
-	view.append( NEWLINE );
 
 	return view;
 }
@@ -126,7 +154,7 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 
 	while ( m_Flag )
 	{
-		Sleep(6000);
+		Sleep(2000);
 
 		if ( !m_isCombatOccur )
 		{
@@ -155,10 +183,19 @@ void CPrinter::AutoMapDisPlayOFF()
 	system ( CLEAR_MONITOR );
 }
 
-CPrinter::CPrinter(CPlayerCharacter& PC, CGameMap& MAP)
+CPrinter::CPrinter(CPlayerCharacter& PC)
 {
 	_m_PC = &PC;
-	_m_Map = &MAP;
+	_m_Map = CGameMap::getInstancePtr();
+	_m_Room = CRoom::getInstancePtr();
+	_m_PC_Room = _m_Room->getPlayer();
+
+
+	AddLogBuffer("게임을 시작합니다.");
+	AddLogBuffer("몬스터들을 잘 피해서 목적지까지 이동하세요.");
+	AddLogBuffer("몬스터를 만나면, 해당 좌표의 공간에서 전투가 이루어집니다.");
+	AddLogBuffer("전투가 시작되면, 주변몹들이 플레이어의 위치를 알고 가까이 다가오니");
+	AddLogBuffer("부디.... 잘 살아남으시기 바랍니다.");
 }
 
 

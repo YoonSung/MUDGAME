@@ -12,9 +12,8 @@ public:
 	static CRoom* getInstancePtr();
 	static void releaseInstance();
 	bool addMonster(CMonster& monster);
-	void addPlayer(CPlayerCharacter& player);
 	~CRoom(void);
-
+	CPlayerCharacter* CRoom::getPlayer();
 private:
 	static CRoom* instance;
 	CPlayerCharacter* m_Player;
