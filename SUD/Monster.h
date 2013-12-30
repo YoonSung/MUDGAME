@@ -8,9 +8,10 @@ public:
 	CMonster( int startX, int startY );
 	~CMonster(void);
 	virtual void Move ( DIRECTION dir );
+	void SetPositionInRoom (int x, int y);
+	virtual void SetPosition (int x, int y);
 private:
 	CMonster(void);
 	virtual void SetPosition ( Position pos );
-	virtual void SetPosition (int x, int y);
 };
 

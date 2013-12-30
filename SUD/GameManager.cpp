@@ -1,20 +1,28 @@
 ﻿#include "stdafx.h"
 #include "GameManager.h"
+
 #define SWAP( x, y, temp ) { (temp = x); (x = y); (y = temp );}
 
 //일반변수
 bool m_isAIMovementON = false;
 CGameMap* m2_Map;
+CRoom* m2_Room;
 //일반함수
 unsigned int WINAPI MonstersAIMove( LPVOID pc );
 
 CGameManager::CGameManager(void)
 {
 	m_PC = new CPlayerCharacter();
+
+	
 	m_Map = CGameMap::getInstancePtr();
 	m2_Map = m_Map;
 
+	m_Room = CRoom::getInstancePtr();
+	m2_Room = m_Room;
+
 	m_Printer = new CPrinter(*m_PC, *m_Map);
+
 
 	HWND hWnd = GetConsoleWindow();
 	ShowWindow(hWnd, SW_MAXIMIZE);
@@ -114,8 +122,15 @@ void CGameManager::CreateMobs()
 
 	while ( mobCount > 0 )
 	{
-		int x = rand() % MAP_SIZE;
-		int y = rand() % MAP_SIZE;
+		int x = (double) rand() / (RAND_MAX) * MAP_SIZE;
+		int y = (double) rand() / (RAND_MAX) * MAP_SIZE;
+
+		//몬스터 출현지역에 대한 설정. 플레이어 주변 4x4위치에는 몹이 생성되지 않도록 하기 위하여
+		if ( x < ( m_PC->GetPositionX()+3 ) && x > ( m_PC->GetPositionX()-3 ))
+			continue;
+
+		if ( y < ( m_PC->GetPositionX()+3 ) && y > ( m_PC->GetPositionX()-3 ))
+			continue;
 
 		MapInfo* pMapInfo = m_Map->GetMapInfo( x, y );
 
@@ -184,13 +199,16 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 
 			CMonster* monster = monsters[index-1];
 
-			float MovementWeight = 0.9f; //20% 가중치
+			if ( monster == nullptr)
+				continue;
+
+			float MovementWeight = 0.9f; //90% 가중치
 			float MovementDeterminant = ((double) rand() / (RAND_MAX));
 
 			if ( MovementWeight < MovementDeterminant )
 			{
 				DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
-				DirectionTogo_Result = possibleTogo[(int)((double) rand() / (RAND_MAX))*4];
+				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*4)];
 				
 			}
 			else
@@ -205,15 +223,14 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 				int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
 				int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
 
-				// 					일정 확률로. ex) 100*rand() > 80이면 이런수준으로 
-				// 						sleep(1000)
-
 				if ( Between_Length_Total == 0 )
 				{
-					printf_s("만났습니다. room으로 이동해야 해요 ㅎㅎ\n");
-					//Room으로 add 후 맵에서 삭제.
-					//이 부분은 몬스터가 이동해서 플레이어를 만난경우니까
-					//몬스터가 돌진했습니다 같이 멘트를하자 ㅎ
+					printf_s("Room으로 좀비가 돌진합니다.\n");
+					MapInfo* test = m2_Map->GetMapInfo(MonsterPositionX, MonsterPositionY);
+					test->pMob = nullptr;
+					monsters[index-1] = nullptr;
+					m2_Room->addMonster(*monster);
+
 					continue;
 				}
 
@@ -303,22 +320,23 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 						int target =  rand()%i;
 						SWAP ( dirArray[i], dirArray[target], temp );
 					}
-					DirectionTogo_Result = dirArray[ rand() % DIR_ARRAY_MAXNUM ];
+					DirectionTogo_Result = dirArray[ (int)((double)rand() / RAND_MAX * DIR_ARRAY_MAXNUM) ];
 			
-					//test code
+					/*//test code
 					printf_s("DIR_UP    : 1\n");
 					printf_s("DIR_Down  : 2\n");
 					printf_s("DIR_LEFT  : 3\n");
 					printf_s("DIR_RIGHT : 4\n\n");
-					/*
+					
 					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
 						printf_s("arr[i] = %d\n", dirArray[i]);
 			
 					printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
 					printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
-					*/
+					
 					printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
 					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
+					*/
 
 				} else {
 					if ( DirectionTogo_X == NONE )
@@ -344,6 +362,9 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 void CGameManager::OccurCombat()
 {
 	m_Printer->CombatModeON();
+	m_Room->addPlayer(*m_PC);
+
+
 	//
 	//	PrintExceptEnemy();
 	m_Printer->AddLogBuffer("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -404,7 +425,7 @@ bool CGameManager::InputProcInCombat()
 
 void CGameManager::destroyMonster(int x, int y)
 {
-	// agebreak : delete 하지 않으면, 메모리 릭이 발생합니다.
+	delete m_Map->GetMapInfo(x, y)->pMob;
 	m_Map->GetMapInfo(x, y)->pMob = nullptr;
 }
 
@@ -427,7 +448,6 @@ void CGameManager::EndMission()
 	m_Printer->AutoMapDisPlayOFF();
 	//	PrintExceptEnemy();
 	printf_s ("미션이 종료되었습니다.\n");
-	Sleep(3500);
 	printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
 
 	Sleep(2000);

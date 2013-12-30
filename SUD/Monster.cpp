@@ -36,12 +36,12 @@ void CMonster::Move ( DIRECTION dir )
 	case NONE:
 		return;
 	case DIR_UP:
-		if ( moveTogo_Y == 9 )
+		if ( moveTogo_Y == 0 )
 			return;
 		--moveTogo_Y;
 		break;
 	case DIR_DOWN:
-		if ( moveTogo_Y == 0 )
+		if ( moveTogo_Y == 9 )
 			return;
 		++moveTogo_Y;
 		break;
@@ -84,7 +84,6 @@ void CMonster::SetPosition ( Position pos )
 	__super::SetPosition( pos );
 }
 
-//not allowed to call this function From extern, only access from constructor
 void CMonster::SetPosition (int x, int y)
 {
 	__super::SetPosition ( x, y );

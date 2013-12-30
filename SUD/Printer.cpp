@@ -115,7 +115,7 @@ void _Print(std::string enemySymbol)
 	std::string view;
 	system ( CLEAR_MONITOR );
 	view.append(getMapView(enemySymbol));
-//	view.append(getLogView());
+	view.append(getLogView());
 
 	printf(view.c_str());
 }

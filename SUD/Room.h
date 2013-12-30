@@ -1,19 +1,27 @@
 #pragma once
 
 #include "Monster.h"
+#include "GameMap.h"
 #include "PlayerCharacter.h"
-#define MAX_MONSTER_NUM 10
+#define MAX_MONSTER_NUM 15
 
 class CRoom
+: public CGameMap
 {
 public:
-	CRoom(CMonster* monster, CPlayerCharacter* player);
+	static CRoom* getInstancePtr();
+	static void releaseInstance();
+	bool addMonster(CMonster& monster);
+	void addPlayer(CPlayerCharacter& player);
 	~CRoom(void);
-	void addMonster(CMonster monster);
+
 private:
-	CRoom(void);
+	static CRoom* instance;
 	CPlayerCharacter* m_Player;
 	CMonster* m_Monster [ MAX_MONSTER_NUM ];
+private:
+	CRoom(void);
 	void StartCatchMeIfYouCan();
+	void destroyMonster();
 };
 
