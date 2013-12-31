@@ -14,13 +14,13 @@ public:
 	bool addMonster(CMonster& monster);
 	~CRoom(void);
 	CPlayerCharacter* CRoom::getPlayer();
+	bool isCatchZombieSuccess();
 private:
 	static CRoom* instance;
 	CPlayerCharacter* m_Player;
 	CMonster* m_Monster [ MAX_MONSTER_NUM ];
 private:
 	CRoom(void);
-	void StartCatchMeIfYouCan();
 	void destroyMonster();
 };
 

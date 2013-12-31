@@ -6,7 +6,7 @@ class CMonster :
 {
 public:
 	CMonster( int startX, int startY );
-	~CMonster(void);
+	virtual ~CMonster(void);
 	void CMonster::_Move ( DIRECTION dir, BOOL IsCallFromRoom );
 	virtual void Move ( DIRECTION dir );
 	void MoveInRoom ( DIRECTION dir );

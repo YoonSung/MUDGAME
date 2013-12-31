@@ -1,18 +1,24 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Printer.h"
 
-#define VACANT_SPACE	"¡à "
-#define ENEMY_SPACE		"¢Ã "
-#define TARGET_SPACE	"¢¾ "
-#define PLAYER_SPACE	"¡Ú "
-#define NEWLINE_TWICE	"\n\n"
+#define VACANT_SPACE	"â–¡"
+#define ENEMY_SPACE		"â€»"//å›
+#define TARGET_SPACE	"â™¥"
+#define PLAYER_SPACE	"â˜…"
+#define NEWLINE_TWICE	"\n\n" 
 #define CLEAR_MONITOR	"cls"
 #define NEWLINE			"\n"
-#define TAP				"\t\t\t"
+#define TAP				"\t\t\t" 
 #define PRINT_INTERVAL		500
 #define TIME_BETWEEN_PRINT 1000
 
-//print ÀÏ¹İÇÔ¼ö¿¡¼­ ´Ù·ç¾î¾ß ÇÏ±â ¶§¹®¿¡ ÀÏ¹İº¯¼ö·Î ¼±¾ğ.
+#define PLAYER_SPACE_IN_ROOM	"â–¡"
+#define PLAYER_WITH_TARGET		"â–£"
+#define TARGET_SPACE_IN_ROOM	"â€»" 
+#define VACANT_SPACE_IN_ROOM	"  "
+#define MAX_LOG_LENGTH		70
+
+//print ì¼ë°˜í•¨ìˆ˜ì—ì„œ ë‹¤ë£¨ì–´ì•¼ í•˜ê¸° ë•Œë¬¸ì— ì¼ë°˜ë³€ìˆ˜ë¡œ ì„ ì–¸.
 bool m_Flag = true;
 CPlayerCharacter* _m_PC;
 CPlayerCharacter* _m_PC_Room;
@@ -22,7 +28,7 @@ std::string m_LogBuffer[10];
 CRoom* _m_Room;
 
 
-//³»ºÎÇÔ¼ö ¼±¾ğ
+//ë‚´ë¶€í•¨ìˆ˜ ì„ ì–¸
 void _PrintAllThing();
 void _PrintExceptEnemy();
 void _Print(std::string enemySymbol);
@@ -43,11 +49,38 @@ std::string getLogView()
 {
 	std::string view;
 
+	view.append("â”");
+
+	for(int i = 0; i < MAX_LOG_LENGTH-35; ++i) {
+		view.append("â”");
+	}
+		view.append("â”“");
+	view.append( NEWLINE );
+
 	for ( int i = 0 ; i < MAX_LOG_NUM ; ++i )
 	{
+		view.append("â”ƒ");
+
+		int size = m_LogBuffer[i].length();
+
+		std::string temp;
+
+		for ( int i = 0 ; i < MAX_LOG_LENGTH-size ; ++i)
+		{
+			temp.append(" ");
+		}
+
 		view.append(m_LogBuffer[i]);
+		view.append(temp);
+		view.append("â”ƒ");
 		view.append( NEWLINE );
 	}
+
+	view.append("â”—");
+	for(int i = 0; i < MAX_LOG_LENGTH-35; ++i) {
+		view.append("â”");
+	}
+	view.append("â”›");
 
 	return view;
 }
@@ -57,8 +90,27 @@ std::string getMapView(std::string enemySymbol)
 
 	std::string view;
 
-	for ( int y = 0 ; y < MAP_SIZE ; ++y )
+	view.append("â”");
+	for(int i = 0; i < MAP_SIZE; ++i) {
+		view.append("â”");
+	}
+	view.append("â”“");
+
+	if ( m_isCombatOccur )
 	{
+		view.append( TAP );
+		view.append("â”");
+		for(int i = 0; i < MAP_SIZE; ++i) {
+			view.append("â”");
+		}
+		view.append("â”“");
+	}
+
+	view.append(NEWLINE);
+
+	for ( int y = 0 ; y < MAP_SIZE ; ++y )
+	{ 
+		view.append("â”ƒ");
 		for ( int x = 0 ; x < MAP_SIZE ; ++x )
 		{
 			if ( _m_PC->GetPositionY() == y && _m_PC->GetPositionX() == x )
@@ -75,36 +127,56 @@ std::string getMapView(std::string enemySymbol)
 
 			MapInfo* pMapInfo = _m_Map->GetMapInfo( x, y );
 
-			//±âÁ¸ÀÇ ¿ŞÂÊ¸Ê
+			//ê¸°ì¡´ì˜ ì™¼ìª½ë§µ
 			if ( pMapInfo->pMob == nullptr )
 				view.append ( VACANT_SPACE );
 			else
 				view.append ( enemySymbol );
 		}
-		
-		//¸¸¾à ÀüÅõ°¡ ½ÃÀÛµÇ¸é ¿À¸¥ÂÊ ¸Êµµ º¸¿©ÁØ´Ù.
+		view.append("â”ƒ");
+		//ë§Œì•½ ì „íˆ¬ê°€ ì‹œì‘ë˜ë©´ ì˜¤ë¥¸ìª½ ë§µë„ ë³´ì—¬ì¤€ë‹¤.
 		if ( m_isCombatOccur )
 		{
 			view.append( TAP );
-
+			view.append("â”ƒ");
 			for ( int x = 0 ; x < MAP_SIZE ; ++x )
 			{
 				if ( _m_PC_Room->GetPositionY() == y && _m_PC_Room->GetPositionX() == x )
 				{
-					view.append ( PLAYER_SPACE );
+					view.append ( PLAYER_SPACE_IN_ROOM );
 					continue;
 				}
 
 				MapInfo* pRoomMapInfo = CRoom::getInstancePtr()->GetMapInfo( x, y );
 
 				if ( pRoomMapInfo->pMob == nullptr )
-					view.append ( VACANT_SPACE );
+					view.append ( VACANT_SPACE_IN_ROOM );
 				else
 					view.append ( enemySymbol );
 			}
+			view.append("â”ƒ");
 		}
-		view.append ( NEWLINE_TWICE );
+		view.append ( NEWLINE );
 	}
+
+	view.append("â”—");
+	for(int i = 0; i < MAP_SIZE; ++i) {
+		view.append("â”");
+	}
+	view.append("â”›");
+
+	if ( m_isCombatOccur )
+	{
+		view.append( TAP );
+		view.append("â”—");
+		for(int i = 0; i < MAP_SIZE; ++i) {
+			view.append("â”");
+		}
+		view.append("â”›");
+	}
+
+
+	view.append(NEWLINE_TWICE);
 
 	return view;
 }
@@ -143,12 +215,16 @@ void _Print(std::string enemySymbol)
 {
 	std::string view;
 	view.append(getMapView(enemySymbol));
+
+	//
+	view.append (m_)
+
 	view.append(getLogView());
 	system ( CLEAR_MONITOR );
 	printf(view.c_str());
 }
 
-// agebreak : È­¸é Ãâ·Â¿¡ ½º·¹µå¸¦ »ç¿ëÇÑ°Ç ÁÁÀº Á¢±ÙÀÔ´Ï´Ù. ^^
+// agebreak : í™”ë©´ ì¶œë ¥ì— ìŠ¤ë ˆë“œë¥¼ ì‚¬ìš©í•œê±´ ì¢‹ì€ ì ‘ê·¼ì…ë‹ˆë‹¤. ^^
 unsigned int WINAPI ThreadProc( LPVOID lpParam )
 {
 
@@ -192,13 +268,13 @@ CPrinter::CPrinter(CPlayerCharacter& PC)
 	_m_PC_Room = _m_Room->getPlayer();
 
 
-	AddLogBuffer("°ÔÀÓÀ» ½ÃÀÛÇÕ´Ï´Ù.");
-	AddLogBuffer("¸ó½ºÅÍµéÀ» Àß ÇÇÇØ¼­ ¸ñÀûÁö±îÁö ÀÌµ¿ÇÏ¼¼¿ä.");
-	AddLogBuffer("¸ó½ºÅÍ¸¦ ¸¸³ª¸é, ÇØ´ç ÁÂÇ¥ÀÇ °ø°£¿¡¼­ ÀüÅõ°¡ ÀÌ·ç¾îÁı´Ï´Ù.");
-	AddLogBuffer("ÀüÅõ°¡ ½ÃÀÛµÇ¸é, ÁÖº¯¸÷µéÀÌ ÇÃ·¹ÀÌ¾îÀÇ À§Ä¡¸¦ ¾Ë°í °¡±îÀÌ ´Ù°¡¿À´Ï");
-	AddLogBuffer("»¡¸® ÀüÅõ¸¦ ³¡³»¾ß ÇÕ´Ï´Ù!!!");
+	AddLogBuffer("ê²Œì„ì„ ì‹œì‘í•©ë‹ˆë‹¤.");
+	AddLogBuffer("ëª¬ìŠ¤í„°ë“¤ì„ ì˜ í”¼í•´ì„œ ëª©ì ì§€ê¹Œì§€ ì´ë™í•˜ì„¸ìš”.");
+	AddLogBuffer("ëª¬ìŠ¤í„°ë¥¼ ë§Œë‚˜ë©´, í•´ë‹¹ ì¢Œí‘œì˜ ê³µê°„ì—ì„œ ì „íˆ¬ê°€ ì´ë£¨ì–´ì§‘ë‹ˆë‹¤.");
+	AddLogBuffer("ì „íˆ¬ê°€ ì‹œì‘ë˜ë©´, ì£¼ë³€ëª¹ë“¤ì´ í”Œë ˆì´ì–´ì˜ ìœ„ì¹˜ë¥¼ ì•Œê³  ê°€ê¹Œì´ ë‹¤ê°€ì˜¤ë‹ˆ");
+	AddLogBuffer("ë¹¨ë¦¬ ì „íˆ¬ë¥¼ ëë‚´ì•¼ í•©ë‹ˆë‹¤!!!");
 	AddLogBuffer(" ");
-	AddLogBuffer("ºÎµğ.... Àß »ì¾Æ³²À¸½Ã±â ¹Ù¶ø´Ï´Ù.");
+	AddLogBuffer("ë¶€ë””.... ì˜ ì‚´ì•„ë‚¨ìœ¼ì‹œê¸° ë°”ëë‹ˆë‹¤.");
 }
 
 

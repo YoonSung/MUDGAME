@@ -32,8 +32,11 @@ CGameMap::~CGameMap(void)
 	{
 		for ( int j = 0; j < MAP_SIZE; ++j )
 		{
-			delete m_MapInfo[i][j].pMob;
-			m_MapInfo[i][j].pMob = nullptr;
+			if ( m_MapInfo[i][j].pMob != nullptr )
+			{
+				delete m_MapInfo[i][j].pMob;
+				m_MapInfo[i][j].pMob = nullptr;
+			}
 		}
 	}
 

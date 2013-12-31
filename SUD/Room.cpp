@@ -51,11 +51,24 @@ CRoom::CRoom(void)
 	m_Player->SetPosition(4,5);
 }
 
-void CRoom::StartCatchMeIfYouCan()
-{
-}
-
 CRoom::~CRoom(void)
 {
 	delete m_Player;
+}
+
+bool CRoom::isCatchZombieSuccess()
+{
+	int x = m_Player->GetPosition().x;
+	int y = m_Player->GetPosition().y;
+
+	MapInfo* mapInfo = GetMapInfo(x, y);
+	if (  mapInfo->pMob != nullptr )
+	{
+		CMonster* test = mapInfo->pMob;
+		//delete test; 메모리누수. 왜 에러가 나는지 모르겠습니다.. block_type_is_invalid type ...
+		mapInfo->pMob = nullptr;
+		return true;
+	}
+
+	return false;
 }

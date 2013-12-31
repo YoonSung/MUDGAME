@@ -30,5 +30,6 @@ protected:
 	int m_damage;
 	int m_energy;
 	int m_level;
+	int m_experience;
 };
 

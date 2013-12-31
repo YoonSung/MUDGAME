@@ -2,7 +2,7 @@
 #include "GameManager.h"
 
 #define SWAP( x, y, temp ) { (temp = x); (x = y); (y = temp );}
-#define MOVE_INTERVAL_IN_ROOM	50
+#define MOVE_INTERVAL_IN_ROOM	200
 #define MOVE_INTERVAL			2100
 
 //일반변수
@@ -79,9 +79,11 @@ bool CGameManager::InputProc()
 	//커맨드를 파싱하고 실행한다.
 	//esc를 입력받으면 종료된다
 
-
 	char strInput = _getch(); 
 
+	//InputProcInCombat으로 들어가기 위한 과정.
+	if ( m_IsCombatOccur )
+		return true;
 
 	if ( strInput == 'w' || strInput == 'W')
 		m_PC->Move(DIR_UP);
@@ -262,28 +264,15 @@ void _MonsterAIMoveInRoom(CPlayerCharacter* pc)
 			
 			//같은행, 또는 같은열일 경우	
 			if ( Between_Length_X == 0 || Between_Length_Y == 0 )
-			{
-// 				DIRECTION possibleTogo[2];
-				
+			{		
 				if ( Between_Length_X == 0 )
 				{
 					( MonsterPositionX < 5 ) ? DirectionTogo_Result = DIR_RIGHT : DirectionTogo_Result = DIR_LEFT;
-
-//					DirectionTogo_Result = DirectionTogo_Y;
-// 					possibleTogo[0] = DirectionTogo_Y;
-// 					possibleTogo[1] = DirectionTogo_Reverse_Y;
 				}	
 				else
 				{
 					( MonsterPositionY < 5 ) ? DirectionTogo_Result = DIR_DOWN : DirectionTogo_Result = DIR_UP;
-
-//					DirectionTogo_Result = DirectionTogo_X;
-// 					possibleTogo[0] = DirectionTogo_X;
-// 					possibleTogo[1] = DirectionTogo_Reverse_X;
-				}
-
-				//DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
-				
+				}				
 			}
 			else
 			{
@@ -311,24 +300,7 @@ void _MonsterAIMoveInRoom(CPlayerCharacter* pc)
 				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
 			}
 		}
-		/*
-		//test
-		printf_s("DIR_UP    : 1\n");
-		printf_s("DIR_Down  : 2\n");
-		printf_s("DIR_LEFT  : 3\n");
-		printf_s("DIR_RIGHT : 4\n\n");
 
-		printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
-		printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
-		printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
-				
-
-		printf_s("MovementWeight : %f\n", MovementWeight );
-		printf_s("MovementDeterminant : %f\n", MovementDeterminant );
-
-
-		printf_s("DirectionTogo_Result : %d\n", DirectionTogo_Result );
-		*/
 		monster->MoveInRoom( DirectionTogo_Result );
 		m2_Printer->PrintAllThing();
 
@@ -398,7 +370,7 @@ void _MonsterAIMove(CPlayerCharacter* pc)
 			{
 				
 				//좀비가 플레이어에게 이동하는 경우이므로 멘트를 아래와 같이 한다.
-				m2_Printer->AddLogBuffer("좀비가 돌진해옵니다.\n");
+				m2_Printer->AddLogBuffer("좀비가 돌진해옵니다.");
 
 				//이미 전투가 진행중이 아닐경우, 이미 전투중일때 주변 몬스터가 접근했을때 이 루프문을 무시하고 통과하게 된다. 즉, 최초 몬스터를 만날때만 실행된다.
 				if ( !m_IsCombatOccur )
@@ -638,7 +610,19 @@ bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room )
 		m_PC_Room->Move ( DIR_LEFT ) ;
 	if ( strInput == 'd' || strInput == 'D')
 		m_PC_Room->Move ( DIR_RIGHT ) ;
+	if ( strInput == 'k' || strInput == 'K')
+	{
+		bool result = m_Room->isCatchZombieSuccess();
 
+		if ( result )
+		{
+			m_Printer->AddLogBuffer("좀비를 잡았습니다!!");
+		}
+		else
+		{
+			m_Printer->AddLogBuffer("힘 낭비를 하지마세요! 좀비가 없는 지역입니다");
+		}
+	}
 	m_Printer->PrintAllThing();
 
 	if ( m_IsCombatOccur == false )
