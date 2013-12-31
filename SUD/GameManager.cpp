@@ -260,36 +260,54 @@ void _MonsterAIMoveInRoom(CPlayerCharacter* pc)
 				DirectionTogo_Reverse_X = DIR_UP;
 			}	
 			
-			//같은행, 또는 같은열일 경우
-			if ( DirectionTogo_X == NONE || DirectionTogo_Y == NONE )
+			//같은행, 또는 같은열일 경우	
+			if ( Between_Length_X == 0 || Between_Length_Y == 0 )
 			{
-				if ( DirectionTogo_X == NONE )
-					DirectionTogo_Result = DirectionTogo_Y;
-				else 
-					DirectionTogo_Result = DirectionTogo_X;
+// 				DIRECTION possibleTogo[2];
+				
+				if ( Between_Length_X == 0 )
+				{
+					( MonsterPositionX < 5 ) ? DirectionTogo_Result = DIR_RIGHT : DirectionTogo_Result = DIR_LEFT;
+
+//					DirectionTogo_Result = DirectionTogo_Y;
+// 					possibleTogo[0] = DirectionTogo_Y;
+// 					possibleTogo[1] = DirectionTogo_Reverse_Y;
+				}	
+				else
+				{
+					( MonsterPositionY < 5 ) ? DirectionTogo_Result = DIR_DOWN : DirectionTogo_Result = DIR_UP;
+
+//					DirectionTogo_Result = DirectionTogo_X;
+// 					possibleTogo[0] = DirectionTogo_X;
+// 					possibleTogo[1] = DirectionTogo_Reverse_X;
+				}
+
+				//DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
+				
 			}
 			else
 			{
-				DIRECTION possibleTogo[2];
-				memset(possibleTogo, NULL, sizeof(possibleTogo));
+				DIRECTION possibleTogo[2] = { DirectionTogo_X, DirectionTogo_Y};
+				
 
 				if ( ( MonsterPositionX == 1 || MonsterPositionX == 9 ) && MonsterPositionY != 9 )
 				{
 					possibleTogo[0] = DirectionTogo_Reverse_X;
 					possibleTogo[1] = DirectionTogo_Y;
 				}
-				else if ( MonsterPositionX != 9 && ( MonsterPositionX == 1 || MonsterPositionY == 9 ))
+				else if ( MonsterPositionX != 9 && ( MonsterPositionY == 1 || MonsterPositionY == 9 ))
 				{
 					possibleTogo[0] = DirectionTogo_X;
 					possibleTogo[1] = DirectionTogo_Reverse_Y; 
 				}
-				else
+				else if (  ( MonsterPositionX == 1 && MonsterPositionX == 9 ) == true && ( MonsterPositionY == 1 && MonsterPositionY == 9 ) == true )
 				{
 					if ( Between_Length_X > Between_Length_Y )
 						possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_X;
 					else
 						possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_Y;
 				}
+
 				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
 			}
 		}

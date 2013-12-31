@@ -142,10 +142,9 @@ void _PrintExceptEnemy()
 void _Print(std::string enemySymbol)
 {
 	std::string view;
-	system ( CLEAR_MONITOR );
 	view.append(getMapView(enemySymbol));
 	view.append(getLogView());
-
+	system ( CLEAR_MONITOR );
 	printf(view.c_str());
 }
 
