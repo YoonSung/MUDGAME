@@ -25,6 +25,16 @@ public:
 	virtual void SetPosition (int x, int y);
 	Position GetPosition(){return m_position;};
 	virtual void Move ( DIRECTION dir );
+
+	void SetEnergy(int energy);
+	void SetLevel(int level);
+	void SetExperience(int experience);
+	void SetDamage(int damage);
+
+	int GetDamage();
+	int GetEnergy();
+	int GetLevel();
+	int GetExperience();
 protected:
 	Position m_position;
 	int m_damage;

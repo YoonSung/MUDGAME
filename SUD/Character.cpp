@@ -8,10 +8,11 @@
 
 CCharacter::CCharacter(void)
 {
+	m_level = 1;
 	m_position.x = m_position.y = 0;
-	m_energy = 100 * m_level;
-	m_damage = 30 * m_level;
-	m_experience = 0;
+	m_energy = 300 * m_level;
+	m_damage = 1 * m_level;
+	m_experience = 50*m_level;
 }
 
 CCharacter::~CCharacter(void)
@@ -51,4 +52,44 @@ void CCharacter::Move( DIRECTION dir )
 	}
 
 	//printf_s( "current pos = ( %d, %d )\n", m_position.x, m_position.y );
+}
+
+int CCharacter::GetEnergy()
+{
+	return m_energy;
+}
+
+int CCharacter::GetDamage()
+{
+	return m_damage;
+}
+
+int CCharacter::GetLevel()
+{
+	return m_level;
+}
+
+int CCharacter::GetExperience()
+{
+	return m_experience;
+}
+
+void CCharacter::SetEnergy( int energy )
+{
+	m_energy = energy;
+}
+
+void CCharacter::SetLevel( int level )
+{
+	m_level = level;
+}
+
+void CCharacter::SetExperience( int experience )
+{
+	m_experience = experience;
+}
+
+void CCharacter::SetDamage( int damage )
+{
+	m_damage = damage;
 }

@@ -10,7 +10,9 @@
 class CPrinter
 {
 public:
-	CPrinter::CPrinter(CPlayerCharacter& PC);
+	static CPrinter* getInstancePtr();
+	static void releaseInstance();
+
 	~CPrinter(void);
 	void AddLogBuffer(std::string logString);
 	void AutoMapDisplayON();
@@ -19,5 +21,9 @@ public:
 	void CombatModeOFF();
 	void PrintExceptEnemy();
 	void PrintAllThing();
+	void init(CPlayerCharacter& PC);
+private:
+	static CPrinter* instance;
+	CPrinter::CPrinter();
 };
 

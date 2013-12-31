@@ -15,9 +15,9 @@ CRoom* m2_Room;
 CPrinter* m2_Printer;
 
 //일반함수
-void _MonsterAIMove( CPlayerCharacter* pc );
-void _MonsterAIMoveInRoom(CPlayerCharacter* pc);
 unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter );
+unsigned int WINAPI MonstersAIMoveInRoom( LPVOID PlayerCharacter );
+
 
 CGameManager::CGameManager(void)
 {
@@ -30,7 +30,8 @@ CGameManager::CGameManager(void)
 	m_Room = CRoom::getInstancePtr();
 	m2_Room = m_Room;
 
-	m_Printer = new CPrinter(*m_PC);
+	m_Printer = CPrinter::getInstancePtr();
+	m_Printer->init(*m_PC);
 	m2_Printer = m_Printer;
 
 	HWND hWnd = GetConsoleWindow();
@@ -65,6 +66,9 @@ void CGameManager::Run()
 			EndMission();
 
 		CheckCombatOccur();
+
+		if ( m_Room->IsPlayerDead() )
+			EndMission();
 	}
 }
 
@@ -112,7 +116,7 @@ void CGameManager::CreateMobs()
 	//플레이어 시작점, 목표지점에는 몹이 생기지 않도록 처리가 필요하다. 
 	char buf [ 32 ] =  { 0, };
 
-	int mobCount = 1;//( MAP_SIZE * MAP_SIZE ) / 4 ;
+	int mobCount = 5;//( MAP_SIZE * MAP_SIZE ) / 4 ;
 	srand ( ( unsigned ) time ( NULL ) );
 
 	while ( mobCount > 0 )
@@ -158,366 +162,395 @@ void CGameManager::AutoAIMovementOFF()
 	m_IsAIMovementON = false;
 }
 
-unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
+// unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
+// {
+// 	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
+// 	// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
+// 
+// 	if ( m_IsCombatOccur )
+// 	{
+// 		while ( m_IsCombatOccur )
+// 		{
+// 			_MonsterAIMoveInRoom(pc);
+// 		}
+// 	}
+// 	else
+// 	{
+// 		while ( m_IsAIMovementON )
+// 		{
+// 			_MonsterAIMove(pc);
+// 		} //주기적으로 AIMovement를 시행하는 while 문, movementOn 이라는 flag를 통해서 수행된다.
+// 	}
+// 	
+// 	return 0;
+// }
+
+
+
+
+
+//void _MonsterAIMoveInRoom(CPlayerCharacter* pc)
+unsigned int WINAPI MonstersAIMoveInRoom( LPVOID PlayerCharacter )
 {
 	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
-	// 	printf("position : x = %d, y = %d", pc->GetPositionX(), pc->GetPositionY());
 
-	if ( m_IsCombatOccur )
+
+	while ( m_IsCombatOccur )
 	{
-		while ( m_IsCombatOccur )
-		{
-			_MonsterAIMoveInRoom(pc);
-		}
-	}
-	else
-	{
-		while ( m_IsAIMovementON )
-		{
-			_MonsterAIMove(pc);
-		} //주기적으로 AIMovement를 시행하는 while 문, movementOn 이라는 flag를 통해서 수행된다.
-	}
+
 	
-	return 0;
-}
+		Sleep(MOVE_INTERVAL_IN_ROOM);
 
-void _MonsterAIMoveInRoom(CPlayerCharacter* pc)
-{
-	Sleep(MOVE_INTERVAL_IN_ROOM);
+		CMonster* monsters[MAP_SIZE*MAP_SIZE];
+		memset(monsters, 0, MAP_SIZE*MAP_SIZE);
 
-	CMonster* monsters[MAP_SIZE*MAP_SIZE];
-	memset(monsters, 0, MAP_SIZE*MAP_SIZE);
+		int index = 0;
 
-	int index = 0;
-
-	for ( int x = 0 ; x < MAP_SIZE ; ++x )
-	{
-		for ( int y = 0 ; y < MAP_SIZE ; ++y )
+		for ( int x = 0 ; x < MAP_SIZE ; ++x )
 		{
-			MapInfo* pMapInfo = m2_Room->GetMapInfo( x, y );
-
-			if ( pMapInfo->pMob != nullptr )
+			for ( int y = 0 ; y < MAP_SIZE ; ++y )
 			{
-				monsters[index] = pMapInfo->pMob;
-				++index;
+				MapInfo* pMapInfo = m2_Room->GetMapInfo( x, y );
+
+				if ( pMapInfo->pMob != nullptr )
+				{
+					monsters[index] = pMapInfo->pMob;
+					++index;
+				}
 			}
-		}
-	} 
+		} 
 
 
-	//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
-	while ( index>=1 )
-	{
-		//최종적으로 이동할 위치를 담을 변수
-		DIRECTION DirectionTogo_Result = NONE;
+		//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
+		while ( index>=1 )
+		{
+			//최종적으로 이동할 위치를 담을 변수
+			DIRECTION DirectionTogo_Result = NONE;
 
-		CMonster* monster = monsters[index-1];
+			CMonster* monster = monsters[index-1];
 		
-		if ( monster == nullptr)
-			continue;
-		
-		float MovementWeight = 0.9f; //90% 가중치
-		float MovementDeterminant = ((double) rand() / (RAND_MAX));
-		int MonsterPositionX = monster->GetPosition().x;
-		int MonsterPositionY = monster->GetPosition().y;
-
-		DIRECTION DirectionTogo_X = NONE;
-		DIRECTION DirectionTogo_Y = NONE;
-		DIRECTION DirectionTogo_Reverse_X = NONE;
-		DIRECTION DirectionTogo_Reverse_Y = NONE;
-
-		int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
-		int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
-		int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
-
-		if ( MovementWeight < MovementDeterminant || Between_Length_Total > 8)
-		{
-			DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
-			DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*4)];	
-		}
-		else
-		{
-			//플레이어가 몬스터보다 오른편에 존재.
-			if ( Between_Length_X > 0 )
+			if ( monster == nullptr)
 			{
-				//피해야 하므로 반대방향을 설정한다. map에서 했던 것의 반대.
-				DirectionTogo_X = DIR_LEFT;
-				DirectionTogo_Reverse_X = DIR_RIGHT;
-			}
-			else if ( Between_Length_X < 0 )
-			{
-				DirectionTogo_X = DIR_RIGHT;
-				DirectionTogo_Reverse_X = DIR_LEFT;
+				index--;
+				continue;
 			}
 
-			//플레이어가 몬스터보다 아래쪽에 있으면
-			if ( Between_Length_Y > 0 )
-			{
-				DirectionTogo_Y = DIR_UP;
-				DirectionTogo_Reverse_X = DIR_DOWN;
-			}
-			else if ( Between_Length_Y < 0 )
-			{
-				DirectionTogo_Y = DIR_DOWN; 
-				DirectionTogo_Reverse_X = DIR_UP;
-			}	
-			
-			//같은행, 또는 같은열일 경우	
-			if ( Between_Length_X == 0 || Between_Length_Y == 0 )
-			{		
-				if ( Between_Length_X == 0 )
-				{
-					( MonsterPositionX < 5 ) ? DirectionTogo_Result = DIR_RIGHT : DirectionTogo_Result = DIR_LEFT;
-				}	
-				else
-				{
-					( MonsterPositionY < 5 ) ? DirectionTogo_Result = DIR_DOWN : DirectionTogo_Result = DIR_UP;
-				}				
-			}
-			else
-			{
-				DIRECTION possibleTogo[2] = { DirectionTogo_X, DirectionTogo_Y};
-				
-
-				if ( ( MonsterPositionX == 1 || MonsterPositionX == 9 ) && MonsterPositionY != 9 )
-				{
-					possibleTogo[0] = DirectionTogo_Reverse_X;
-					possibleTogo[1] = DirectionTogo_Y;
-				}
-				else if ( MonsterPositionX != 9 && ( MonsterPositionY == 1 || MonsterPositionY == 9 ))
-				{
-					possibleTogo[0] = DirectionTogo_X;
-					possibleTogo[1] = DirectionTogo_Reverse_Y; 
-				}
-				else if (  ( MonsterPositionX == 1 && MonsterPositionX == 9 ) == true && ( MonsterPositionY == 1 && MonsterPositionY == 9 ) == true )
-				{
-					if ( Between_Length_X > Between_Length_Y )
-						possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_X;
-					else
-						possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_Y;
-				}
-
-				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
-			}
-		}
-
-		monster->MoveInRoom( DirectionTogo_Result );
-		m2_Printer->PrintAllThing();
-
-		Sleep(10); //몬스터별로 이동하는 시간을 다르게 하고 싶어서 넣은 sleep문
-		--index; //while문 첫번째로 돌아가기 전 몬스터 배열에서의 다음 몬스터를 가리키기 위한 인덱스
-	}//맵 전체의 몬스터들을 한번씩 이동시키는  while문
-}
-
-void _MonsterAIMove(CPlayerCharacter* pc)
-{
-	Sleep(MOVE_INTERVAL);
-
-	CMonster* monsters[MAP_SIZE*MAP_SIZE];
-	memset(monsters, 0, MAP_SIZE*MAP_SIZE);
-
-	int index = 0;
-
-	for ( int x = 0 ; x < MAP_SIZE ; ++x )
-	{
-		for ( int y = 0 ; y < MAP_SIZE ; ++y )
-		{
-			MapInfo* pMapInfo = m2_Map->GetMapInfo( x, y );
-
-			if ( pMapInfo->pMob != nullptr )
-			{
-				monsters[index] = pMapInfo->pMob;
-				++index;
-			}
-		}
-	} 
-
-
-	//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
-	while ( index>=1 )
-	{
-		//최종적으로 이동할 위치를 담을 변수
-		DIRECTION DirectionTogo_Result = NONE;
-
-		CMonster* monster = monsters[index-1];
-
-		if ( monster == nullptr)
-			continue;
-
-		float MovementWeight = 0.9f; //90% 가중치
-		float MovementDeterminant = ((double) rand() / (RAND_MAX));
-
-		if ( MovementWeight < MovementDeterminant )
-		{
-			DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
-			DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*4)];
-				
-		}
-		else
-		{
+			float MovementWeight = 0.9f; //90% 가중치
+			float MovementDeterminant = ((double) rand() / (RAND_MAX));
 			int MonsterPositionX = monster->GetPosition().x;
 			int MonsterPositionY = monster->GetPosition().y;
 
 			DIRECTION DirectionTogo_X = NONE;
 			DIRECTION DirectionTogo_Y = NONE;
+			DIRECTION DirectionTogo_Reverse_X = NONE;
+			DIRECTION DirectionTogo_Reverse_Y = NONE;
 
 			int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
 			int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
 			int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
 
-
-			if ( Between_Length_Total == 0 )
+			if ( MovementWeight < MovementDeterminant || Between_Length_Total > 8)
 			{
-				
-				//좀비가 플레이어에게 이동하는 경우이므로 멘트를 아래와 같이 한다.
-				m2_Printer->AddLogBuffer("좀비가 돌진해옵니다.");
-
-				//이미 전투가 진행중이 아닐경우, 이미 전투중일때 주변 몬스터가 접근했을때 이 루프문을 무시하고 통과하게 된다. 즉, 최초 몬스터를 만날때만 실행된다.
-				if ( !m_IsCombatOccur )
+				DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
+				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*4)];	
+			}
+			else
+			{
+				//플레이어가 몬스터보다 오른편에 존재.
+				if ( Between_Length_X > 0 )
 				{
-					m2_Printer->AddLogBuffer("좀비와의 전투가 시작됩니다.");
-					m2_Printer->AddLogBuffer("악랄한 좀비는 원거리에서 공격해옵니다.");
-					m2_Printer->AddLogBuffer("좀비를 잡지 못하면 에너지가 계속 감소됩니다...!");
-					m2_Printer->AddLogBuffer("키를 입력하시면 Room으로 입장합니다.");
+					//피해야 하므로 반대방향을 설정한다. map에서 했던 것의 반대.
+					DirectionTogo_X = DIR_LEFT;
+					DirectionTogo_Reverse_X = DIR_RIGHT;
+				}
+				else if ( Between_Length_X < 0 )
+				{
+					DirectionTogo_X = DIR_RIGHT;
+					DirectionTogo_Reverse_X = DIR_LEFT;
 				}
 
-				m_IsCombatOccur = true;
-
-				
-
-				MapInfo* mapInfo = m2_Map->GetMapInfo(MonsterPositionX, MonsterPositionY);
-					
-				//기존의 맵에서 좀비 삭제
-				mapInfo->pMob = nullptr;
-				monsters[index-1] = nullptr;
-				m2_Room->addMonster(*monster);
-
-				continue;
-			}
-
-			//플레이어가 몬스터보다 오른편에 존재.
-			if ( Between_Length_X > 0 )
-			{
-				DirectionTogo_X = DIR_RIGHT;					
-			}
-			else if ( Between_Length_X < 0 )
-			{
-				DirectionTogo_X = DIR_LEFT;
-			}
-
-			//플레이어가 몬스터보다 아래쪽에 있으면
-			if ( Between_Length_Y > 0 )
-			{
-				DirectionTogo_Y = DIR_DOWN;
-			}
-			else if ( Between_Length_Y < 0 )
-			{
-				DirectionTogo_Y = DIR_UP; 
-			}	
-
-			//기본 할당수치 5+5 = 10
-			int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
+				//플레이어가 몬스터보다 아래쪽에 있으면
+				if ( Between_Length_Y > 0 )
+				{
+					DirectionTogo_Y = DIR_UP;
+					DirectionTogo_Reverse_X = DIR_DOWN;
+				}
+				else if ( Between_Length_Y < 0 )
+				{
+					DirectionTogo_Y = DIR_DOWN; 
+					DirectionTogo_Reverse_X = DIR_UP;
+				}	
 			
-			//같은행, 또는 같은열에 없는경우.
-			if ( DirectionTogo_X != NONE && DirectionTogo_Y != NONE )
-			{
-				int numTogo_X = DIR_ARRAY_MAXNUM / 4;
-				int numTogo_Y = DIR_ARRAY_MAXNUM / 4;
-
-				if ( Between_Length_Total <= 15 )
-				{
-					numberOfAllocation = 21 - Between_Length_Total;//21 - Between_Length_Total;
-				}
-
-				//할당 받은 개수가 짝수일 경우
-				if ( numberOfAllocation % 2 == 0 )
-				{
-					//togo x,y 할당
-					numTogo_X = numTogo_Y = numberOfAllocation / 2;
-				}
-
-				//할당 받은 개수가 홀수일 경우
-				else
-				{
-					if ( Between_Length_X < Between_Length_Y )
+				//같은행, 또는 같은열일 경우	
+				if ( Between_Length_X == 0 || Between_Length_Y == 0 )
+				{		
+					if ( Between_Length_X == 0 )
 					{
-						//togo x,y 할당
-						numTogo_X = numTogo_Y = numberOfAllocation / 2;
-
-						//가까운쪽에 1을 더 더함
-						++numTogo_X;
-					}
+						( MonsterPositionX < 5 ) ? DirectionTogo_Result = DIR_RIGHT : DirectionTogo_Result = DIR_LEFT;
+					}	
 					else
 					{
+						( MonsterPositionY < 5 ) ? DirectionTogo_Result = DIR_DOWN : DirectionTogo_Result = DIR_UP;
+					}				
+				}
+				else
+				{
+					DIRECTION possibleTogo[2] = { DirectionTogo_X, DirectionTogo_Y};
+				
+
+					if ( ( MonsterPositionX == 1 || MonsterPositionX == 9 ) && MonsterPositionY != 9 )
+					{
+						possibleTogo[0] = DirectionTogo_Reverse_X;
+						possibleTogo[1] = DirectionTogo_Y;
+					}
+					else if ( MonsterPositionX != 9 && ( MonsterPositionY == 1 || MonsterPositionY == 9 ))
+					{
+						possibleTogo[0] = DirectionTogo_X;
+						possibleTogo[1] = DirectionTogo_Reverse_Y; 
+					}
+					else if (  ( MonsterPositionX == 1 && MonsterPositionX == 9 ) == true && ( MonsterPositionY == 1 && MonsterPositionY == 9 ) == true )
+					{
+						if ( Between_Length_X > Between_Length_Y )
+							possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_X;
+						else
+							possibleTogo[0] = possibleTogo[1] = DirectionTogo_Reverse_Y;
+					}
+
+					DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*2)];	
+				}
+			}
+
+			//공격후 움직인다.
+			m2_Room->AttackPlayer(monster->GetDamage());
+			monster->MoveInRoom( DirectionTogo_Result );
+			m2_Printer->PrintAllThing();
+
+			Sleep(10); //몬스터별로 이동하는 시간을 다르게 하고 싶어서 넣은 sleep문
+			--index; //while문 첫번째로 돌아가기 전 몬스터 배열에서의 다음 몬스터를 가리키기 위한 인덱스
+		}//맵 전체의 몬스터들을 한번씩 이동시키는  while문
+	}
+	return 0;
+}
+
+//void _MonsterAIMove(CPlayerCharacter* pc)
+unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
+{
+	CPlayerCharacter* pc = reinterpret_cast<CPlayerCharacter*>(PlayerCharacter);
+
+	while ( m_IsAIMovementON )
+	{
+		Sleep(MOVE_INTERVAL);
+
+		CMonster* monsters[MAP_SIZE*MAP_SIZE];
+		memset(monsters, 0, MAP_SIZE*MAP_SIZE);
+
+		int index = 0;
+
+		for ( int x = 0 ; x < MAP_SIZE ; ++x )
+		{
+			for ( int y = 0 ; y < MAP_SIZE ; ++y )
+			{
+				MapInfo* pMapInfo = m2_Map->GetMapInfo( x, y );
+
+				if ( pMapInfo->pMob != nullptr )
+				{
+					monsters[index] = pMapInfo->pMob;
+					++index;
+				}
+			}
+		} 
+
+
+		//index는 총 몬스터 갯수이다. 마지막에 ++로 넘어왔기 때문에 -1배열로 monster에 저장하고 있다.
+		while ( index>=1 )
+		{
+			//최종적으로 이동할 위치를 담을 변수
+			DIRECTION DirectionTogo_Result = NONE;
+
+			CMonster* monster = monsters[index-1];
+
+			if ( monster == nullptr)
+			{
+				index--;
+				continue;
+			}
+			float MovementWeight = 0.9f; //90% 가중치
+			float MovementDeterminant = ((double) rand() / (RAND_MAX));
+
+			if ( MovementWeight < MovementDeterminant )
+			{
+				DIRECTION possibleTogo[] = {NONE, DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT};
+				DirectionTogo_Result = possibleTogo[(int)(((double) rand() / (RAND_MAX))*4)];
+				
+			}
+			else
+			{
+				int MonsterPositionX = monster->GetPosition().x;
+				int MonsterPositionY = monster->GetPosition().y;
+
+				DIRECTION DirectionTogo_X = NONE;
+				DIRECTION DirectionTogo_Y = NONE;
+
+				int Between_Length_X = pc->GetPositionX() - MonsterPositionX;
+				int Between_Length_Y = pc->GetPositionY() - MonsterPositionY;
+				int Between_Length_Total = abs(Between_Length_X) + abs(Between_Length_Y);
+
+
+				if ( Between_Length_Total == 0 )
+				{
+				
+					//좀비가 플레이어에게 이동하는 경우이므로 멘트를 아래와 같이 한다.
+					m2_Printer->AddLogBuffer("좀비가 돌진해옵니다.");
+
+					//이미 전투가 진행중이 아닐경우, 이미 전투중일때 주변 몬스터가 접근했을때 이 루프문을 무시하고 통과하게 된다. 즉, 최초 몬스터를 만날때만 실행된다.
+					if ( !m_IsCombatOccur )
+					{
+						m2_Printer->AddLogBuffer("좀비와의 전투가 시작됩니다.");
+						m2_Printer->AddLogBuffer("악랄한 좀비는 원거리에서 공격해옵니다.");
+						m2_Printer->AddLogBuffer("좀비를 잡지 못하면 에너지가 계속 감소됩니다...!");
+						m2_Printer->AddLogBuffer("키를 입력하시면 Room으로 입장합니다.");
+					}
+
+					m_IsCombatOccur = true;
+
+				
+
+					MapInfo* mapInfo = m2_Map->GetMapInfo(MonsterPositionX, MonsterPositionY);
+
+					//기존의 맵에서 좀비 삭제
+ 					mapInfo->pMob = nullptr;
+ 					monsters[index-1] = nullptr;
+ 					while (!m2_Room->addMonster(*monster));
+					delete mapInfo->pMob;
+
+					continue;
+				}
+
+				//플레이어가 몬스터보다 오른편에 존재.
+				if ( Between_Length_X > 0 )
+				{
+					DirectionTogo_X = DIR_RIGHT;					
+				}
+				else if ( Between_Length_X < 0 )
+				{
+					DirectionTogo_X = DIR_LEFT;
+				}
+
+				//플레이어가 몬스터보다 아래쪽에 있으면
+				if ( Between_Length_Y > 0 )
+				{
+					DirectionTogo_Y = DIR_DOWN;
+				}
+				else if ( Between_Length_Y < 0 )
+				{
+					DirectionTogo_Y = DIR_UP; 
+				}	
+
+				//기본 할당수치 5+5 = 10
+				int numberOfAllocation = DIR_ARRAY_MAXNUM / 2;
+			
+				//같은행, 또는 같은열에 없는경우.
+				if ( DirectionTogo_X != NONE && DirectionTogo_Y != NONE )
+				{
+					int numTogo_X = DIR_ARRAY_MAXNUM / 4;
+					int numTogo_Y = DIR_ARRAY_MAXNUM / 4;
+
+					if ( Between_Length_Total <= 15 )
+					{
+						numberOfAllocation = 21 - Between_Length_Total;//21 - Between_Length_Total;
+					}
+
+					//할당 받은 개수가 짝수일 경우
+					if ( numberOfAllocation % 2 == 0 )
+					{
 						//togo x,y 할당
 						numTogo_X = numTogo_Y = numberOfAllocation / 2;
-						++numTogo_Y;
 					}
-				}
 
-				DIRECTION dirArray[ DIR_ARRAY_MAXNUM ];
+					//할당 받은 개수가 홀수일 경우
+					else
+					{
+						if ( Between_Length_X < Between_Length_Y )
+						{
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
 
-				int i = 0;
+							//가까운쪽에 1을 더 더함
+							++numTogo_X;
+						}
+						else
+						{
+							//togo x,y 할당
+							numTogo_X = numTogo_Y = numberOfAllocation / 2;
+							++numTogo_Y;
+						}
+					}
 
-				for ( int j = 0 ; j < numTogo_X ; ++j )
-				{
-					dirArray[i] = DirectionTogo_X;
-					++i;
-				}
+					DIRECTION dirArray[ DIR_ARRAY_MAXNUM ];
 
-				for ( int j = 0 ; j < numTogo_Y ; ++j )
-				{
-					dirArray[i] = DirectionTogo_Y;
-					++i;
-				}
+					int i = 0;
+
+					for ( int j = 0 ; j < numTogo_X ; ++j )
+					{
+						dirArray[i] = DirectionTogo_X;
+						++i;
+					}
+
+					for ( int j = 0 ; j < numTogo_Y ; ++j )
+					{
+						dirArray[i] = DirectionTogo_Y;
+						++i;
+					}
 
 
-				//배열 셔플.
-				srand ( ( unsigned ) time ( NULL ) );
-				for ( int i = DIR_ARRAY_MAXNUM-1 ; i > 0 ; --i )
-				{
-					DIRECTION temp;
-					int target =  rand()%i;
-					SWAP ( dirArray[i], dirArray[target], temp );
-				}
-				DirectionTogo_Result = dirArray[ (int)((double)rand() / RAND_MAX * DIR_ARRAY_MAXNUM) ];
+					//배열 셔플.
+					srand ( ( unsigned ) time ( NULL ) );
+					for ( int i = DIR_ARRAY_MAXNUM-1 ; i > 0 ; --i )
+					{
+						DIRECTION temp;
+						int target =  rand()%i;
+						SWAP ( dirArray[i], dirArray[target], temp );
+					}
+					DirectionTogo_Result = dirArray[ (int)((double)rand() / RAND_MAX * DIR_ARRAY_MAXNUM) ];
 			
-				/*//test code
-				printf_s("DIR_UP    : 1\n");
-				printf_s("DIR_Down  : 2\n");
-				printf_s("DIR_LEFT  : 3\n");
-				printf_s("DIR_RIGHT : 4\n\n");
+					/*//test code
+					printf_s("DIR_UP    : 1\n");
+					printf_s("DIR_Down  : 2\n");
+					printf_s("DIR_LEFT  : 3\n");
+					printf_s("DIR_RIGHT : 4\n\n");
 					
-				for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
-					printf_s("arr[i] = %d\n", dirArray[i]);
+					for ( int i = 0 ; i < DIR_ARRAY_MAXNUM ; ++i )
+						printf_s("arr[i] = %d\n", dirArray[i]);
 			
-				printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
-				printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
+					printf_s("\n\nPC_pos x : %d , PC_pos y : %d\n",pc->GetPositionX(), pc->GetPositionY());
+					printf_s("M_pos x : %d , M_pos y : %d\n",MonsterPositionX, MonsterPositionY);
 					
-				printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
-				printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
-				*/
+					printf_s("Dir_X : %d, Dir_Y : %d\n", DirectionTogo_X, DirectionTogo_Y);
+					printf_s("togo_X : %d, togo_Y : %d\n", numTogo_X, numTogo_Y);
+					*/
 
-			} else {
-				if ( DirectionTogo_X == NONE )
-					DirectionTogo_Result = DirectionTogo_Y;
-				else 
-					DirectionTogo_Result = DirectionTogo_X;
+				} else {
+					if ( DirectionTogo_X == NONE )
+						DirectionTogo_Result = DirectionTogo_Y;
+					else 
+						DirectionTogo_Result = DirectionTogo_X;
+				}
 			}
-		}
-		/*
-		//test
-		printf_s("MovementWeight : %f\n", MovementWeight );
-		printf_s("MovementDeterminant : %f\n", MovementDeterminant );
+			/*
+			//test
+			printf_s("MovementWeight : %f\n", MovementWeight );
+			printf_s("MovementDeterminant : %f\n", MovementDeterminant );
 
-
-		printf_s("DirectionTogo_Result : %d\n", DirectionTogo_Result );
-		*/
-		monster->Move( DirectionTogo_Result );
+			printf_s("DirectionTogo_Result : %d\n", DirectionTogo_Result );
+			*/
+			monster->Move( DirectionTogo_Result );
 			
-		Sleep(100); //몬스터별로 이동하는 시간을 다르게 하고 싶어서 넣은 sleep문
-		--index; //while문 첫번째로 돌아가기 전 몬스터 배열에서의 다음 몬스터를 가리키기 위한 인덱스
-	}//맵 전체의 몬스터들을 한번씩 이동시키는  while문
+			Sleep(100); //몬스터별로 이동하는 시간을 다르게 하고 싶어서 넣은 sleep문
+			--index; //while문 첫번째로 돌아가기 전 몬스터 배열에서의 다음 몬스터를 가리키기 위한 인덱스
+		}//맵 전체의 몬스터들을 한번씩 이동시키는  while문
+
+	}
+	return 0;
 }
 
 void CGameManager::CheckCombatOccur()
@@ -535,22 +568,21 @@ void CGameManager::CheckCombatOccur()
 		if ( !m_IsCombatOccur )
 		{
 			m_IsCombatOccur = true;
-			m_Printer->AddLogBuffer("이동한 지점에 좀비가 있네요!");
+			m_Printer->AddLogBuffer("이런!!! 좀비를 만났습니다!!");
 			m_Printer->AddLogBuffer("전투가 곧 시작됩니다.");
 
-			//기존의 맵에서 좀비 삭제
-
+			//Room안에서 삭제처리.
 			CMonster monster = *(currentMapInfo->pMob);
-			printf_s("CurrentMapinfo   inGm  : %x\n", (currentMapInfo->pMob));
-			printf_s("monster in GameManager : %x\n", &monster);
-			m_Room->addMonster(monster);
+
+			//기존의 맵에서 좀비 삭제
 			currentMapInfo->pMob = nullptr;
+			while (m_Room->addMonster(monster));
+			delete currentMapInfo->pMob;
 
 			Sleep(2100);
 		}
 
 		OccurCombat();
-		EndCombat();
 	}
 }
 
@@ -568,23 +600,20 @@ void CGameManager::OccurCombat()
 	// 	//상단의 슬립과 맵플레이 함수 없애기
 	// 	system ( CLEAR_MONITOR );
 	CPlayerCharacter* m_PC_Room = m_Room->getPlayer();
+	m_PC_Room->SetPosition(0,0);
+	m_Room->SynchronizePlayer(m_PC->GetLevel(), m_PC->GetEnergy(), m_PC->GetExperience(), m_PC->GetTotalKillingNum() );
 
 	DWORD dwThreadId;
 	HANDLE hThread;
 
-	hThread = ( HANDLE ) _beginthreadex( NULL, 0, MonstersAIMove, m_PC_Room, 0, ( unsigned int* )&dwThreadId );
+	hThread = ( HANDLE ) _beginthreadex( NULL, 0, MonstersAIMoveInRoom, m_PC_Room, 0, ( unsigned int* )&dwThreadId );
 	CloseHandle ( hThread );
 
-
-	while( InputProcInCombat(m_PC_Room) );
-}
-
-void CGameManager::EndCombat()
-{
-	//m_Printer->AutoMapDisplayON();
-
-	//전투로 인해 바뀐 상황들을 여기서 처리
-	m_Printer->CombatModeOFF();
+	while( InputProcInCombat(m_PC_Room) )
+	{
+		if ( CheckRoomMissionClear() )
+			EndRoomMission();
+	}
 }
 
 bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room )
@@ -612,16 +641,7 @@ bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room )
 		m_PC_Room->Move ( DIR_RIGHT ) ;
 	if ( strInput == 'k' || strInput == 'K')
 	{
-		bool result = m_Room->isCatchZombieSuccess();
-
-		if ( result )
-		{
-			m_Printer->AddLogBuffer("좀비를 잡았습니다!!");
-		}
-		else
-		{
-			m_Printer->AddLogBuffer("힘 낭비를 하지마세요! 좀비가 없는 지역입니다");
-		}
+		m_Room->CheckZombieCapture();	
 	}
 	m_Printer->PrintAllThing();
 
@@ -631,6 +651,18 @@ bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room )
 	return true;
 }
 
+bool CGameManager::CheckRoomMissionClear()
+{
+	if ( m_Room->getMonsterNumberInRoom() == 0 )
+		return true;
+
+	if ( m_Room->IsPlayerDead() )
+		return true;
+
+	return false;
+}
+
+//현재 필요하지 않아서 호출되지 않는 상태이다.
 void CGameManager::destroyMonster(int x, int y)
 {
 	delete m_Map->GetMapInfo(x, y)->pMob;
@@ -651,14 +683,47 @@ bool CGameManager::CheckMissionClear()
 	return false;
 }
 
-void CGameManager::EndMission()
+void CGameManager::EndRoomMission()
 {
-	m_Printer->AutoMapDisPlayOFF();
-	//	PrintExceptEnemy();
-	printf_s ("미션이 종료되었습니다.\n");
-	printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
+	if ( m_Room->IsPlayerDead() )
+	{
+		m_Printer->AddLogBuffer("플레이어가 사망하였습니다.");
+	}
+	else
+	{
+		m_Printer->AddLogBuffer("Room안의 좀비를 모두 처치하셨습니다! 전투모드를 종료합니다.");
+	}
+
+	//sychronize player. mock player 객체의 값들을 모두 리턴받는다.
+	CPlayerCharacter* mock = m_Room->getPlayer();
+	m_PC->SetLevel( mock->GetLevel() );
+	m_PC->SetExperience( mock->GetExperience() );
+	m_PC->SetEnergy( mock->GetEnergy() );
+	m_PC->SetTotalKillingNum( mock->GetTotalKillingNum() );
 
 	Sleep(2000);
+	m_Printer->CombatModeOFF();
+	m_IsCombatOccur = false;
+}
+
+void CGameManager::EndMission()
+{
+	printf_s ("미션이 종료되었습니다.\n");
+	m_Printer->AutoMapDisPlayOFF();	
+
+	Sleep(2000);
+
+	if ( m_Room->IsPlayerDead() )
+	{
+
+	}
+	else
+	{
+		printf_s ("미션이 종료되었습니다.\n");
+		printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
+		Sleep(3000);
+		exit(1);
+	}
 	//본래 거슬러 올라가서 InputProc() 함수로 되돌아간다. 하지만 여전히 inputProc은 true값이다. 미션종료에 대한 처리플로우가 필요함.
-	exit(1);
+
 }

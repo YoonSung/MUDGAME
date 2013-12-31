@@ -74,18 +74,19 @@ void CMonster::_Move ( DIRECTION dir, BOOL IsCallFromRoom )
 	else
 		targetMapInfo = m_Map->GetMapInfo( moveTogo_X, moveTogo_Y );
 	
-
-	if ( targetMapInfo->pMob != nullptr )
+	if ( targetMapInfo != nullptr )
 	{
-		return;
+		if ( targetMapInfo->pMob != nullptr )
+		{
+			return;
+		}
+		else
+		{
+			mInfo->pMob = nullptr;
+			targetMapInfo->pMob = this;
+			SetPosition ( moveTogo_X, moveTogo_Y);
+		}
 	}
-	else
-	{
-		mInfo->pMob = nullptr;
-		targetMapInfo->pMob = this;
-		SetPosition ( moveTogo_X, moveTogo_Y);
-	}
-
 	//__super::Move( dir );
 	//printf("position : %d, %d\n",m_position.x, m_position.y);
 }

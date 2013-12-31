@@ -17,7 +17,7 @@ public:
 	void Release();
 protected:
 	bool InputProc();
-	bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room );
+	bool InputProcInCombat( CPlayerCharacter* m_PC_Room );
 protected:
 	CGameMap* m_Map;
 	CPlayerCharacter * m_PC;
@@ -30,7 +30,9 @@ private:
 	void OccurCombat();
 	void EndCombat();
 	bool CheckMissionClear();
+	bool CheckRoomMissionClear();
 	void EndMission();
+	void EndRoomMission();
 	void destroyMonster(int x, int y);
 	void AutoAIMovementON();
 	void AutoAIMovementOFF();

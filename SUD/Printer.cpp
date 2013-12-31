@@ -1,8 +1,9 @@
 ﻿#include "stdafx.h"
 #include "Printer.h"
+#include <sstream>
 
 #define VACANT_SPACE	"□"
-#define ENEMY_SPACE		"※"//回
+#define ENEMY_SPACE		"※"
 #define TARGET_SPACE	"♥"
 #define PLAYER_SPACE	"★"
 #define NEWLINE_TWICE	"\n\n" 
@@ -17,6 +18,9 @@
 #define TARGET_SPACE_IN_ROOM	"※" 
 #define VACANT_SPACE_IN_ROOM	"  "
 #define MAX_LOG_LENGTH		70
+
+//static 변수 선언
+CPrinter* CPrinter::instance;
 
 //print 일반함수에서 다루어야 하기 때문에 일반변수로 선언.
 bool m_Flag = true;
@@ -33,7 +37,7 @@ void _PrintAllThing();
 void _PrintExceptEnemy();
 void _Print(std::string enemySymbol);
 std::string getMapView(std::string enemySymbol);
-
+std::string convertString(int value);
 
 void CPrinter::AddLogBuffer(std::string logString)
 {
@@ -43,6 +47,49 @@ void CPrinter::AddLogBuffer(std::string logString)
 	}
 
 	m_LogBuffer[MAX_LOG_NUM - 1] = logString;
+}
+
+
+std::string getStatusView()
+{
+	std::string view;
+
+	CPlayerCharacter* target;
+
+	if ( m_isCombatOccur )
+	{
+		target = _m_PC_Room;
+	}
+	else
+	{
+		target = _m_PC;
+	}
+	
+
+	view.append("┃");
+	view.append("레벨 : ");
+	view.append( convertString(target->GetLevel()) );
+	view.append("┃");
+	view.append("체력 : ");
+	view.append( convertString(target->GetEnergy()) );
+	view.append("┃");
+	view.append("경험치 : ");
+	view.append( convertString(target->GetExperience()) );
+	view.append("┃");
+	view.append("누적사살횟수 : ");
+	view.append( convertString(target->GetTotalKillingNum()) );
+
+	view.append(NEWLINE);
+
+	return view;
+}
+
+std::string convertString(int value)
+{
+	std::stringstream out;
+	out << value;
+
+	return out.str();
 }
 
 std::string getLogView()
@@ -65,7 +112,7 @@ std::string getLogView()
 
 		std::string temp;
 
-		for ( int i = 0 ; i < MAX_LOG_LENGTH-size ; ++i)
+		for ( int j = 0 ; j < MAX_LOG_LENGTH-size ; ++j)
 		{
 			temp.append(" ");
 		}
@@ -141,14 +188,21 @@ std::string getMapView(std::string enemySymbol)
 			view.append("┃");
 			for ( int x = 0 ; x < MAP_SIZE ; ++x )
 			{
-				if ( _m_PC_Room->GetPositionY() == y && _m_PC_Room->GetPositionX() == x )
-				{
-					view.append ( PLAYER_SPACE_IN_ROOM );
-					continue;
-				}
 
 				MapInfo* pRoomMapInfo = CRoom::getInstancePtr()->GetMapInfo( x, y );
 
+				if ( _m_PC_Room->GetPositionY() == y && _m_PC_Room->GetPositionX() == x )
+				{
+					if ( pRoomMapInfo->pMob != nullptr )
+					{
+						view.append ( PLAYER_WITH_TARGET );
+					}
+					else
+					{
+						view.append ( PLAYER_SPACE_IN_ROOM );
+					}
+					continue;
+				}
 				if ( pRoomMapInfo->pMob == nullptr )
 					view.append ( VACANT_SPACE_IN_ROOM );
 				else
@@ -215,10 +269,7 @@ void _Print(std::string enemySymbol)
 {
 	std::string view;
 	view.append(getMapView(enemySymbol));
-
-	//
-	view.append (m_)
-
+	view.append(getStatusView());
 	view.append(getLogView());
 	system ( CLEAR_MONITOR );
 	printf(view.c_str());
@@ -260,7 +311,22 @@ void CPrinter::AutoMapDisPlayOFF()
 	system ( CLEAR_MONITOR );
 }
 
-CPrinter::CPrinter(CPlayerCharacter& PC)
+CPrinter::CPrinter(){}
+
+CPrinter* CPrinter::getInstancePtr()
+{
+	if ( instance == nullptr )
+	{
+		instance = new CPrinter();
+	}
+	return instance;
+}
+void CPrinter::releaseInstance()
+{
+	delete instance;
+}
+
+void CPrinter::init(CPlayerCharacter& PC)
 {
 	_m_PC = &PC;
 	_m_Map = CGameMap::getInstancePtr();
@@ -276,7 +342,6 @@ CPrinter::CPrinter(CPlayerCharacter& PC)
 	AddLogBuffer(" ");
 	AddLogBuffer("부디.... 잘 살아남으시기 바랍니다.");
 }
-
 
 CPrinter::~CPrinter(void)
 {
