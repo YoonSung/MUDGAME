@@ -13,11 +13,11 @@ public:
 	CPrinter::CPrinter(CPlayerCharacter& PC);
 	~CPrinter(void);
 	void AddLogBuffer(std::string logString);
-	void ShowScreen();
 	void AutoMapDisplayON();
 	void AutoMapDisPlayOFF();
 	void CombatModeON();
 	void CombatModeOFF();
 	void PrintExceptEnemy();
+	void PrintAllThing();
 };
 

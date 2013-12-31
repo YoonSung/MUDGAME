@@ -17,7 +17,7 @@ public:
 	void Release();
 protected:
 	bool InputProc();
-	bool InputProcInCombat();
+	bool CGameManager::InputProcInCombat( CPlayerCharacter* m_PC_Room );
 protected:
 	CGameMap* m_Map;
 	CPlayerCharacter * m_PC;

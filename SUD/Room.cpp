@@ -26,8 +26,6 @@ CPlayerCharacter* CRoom::getPlayer()
 
 bool CRoom::addMonster(CMonster& monster)
 {
-	monster.SetPosition(MAP_SIZE-1, MAP_SIZE-1);
-
 	bool isAdded = false;
 	
 	Position monster_pos = monster.GetPosition();

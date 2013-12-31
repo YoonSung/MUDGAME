@@ -9,7 +9,8 @@
 #define CLEAR_MONITOR	"cls"
 #define NEWLINE			"\n"
 #define TAP				"\t\t\t"
-
+#define PRINT_INTERVAL		500
+#define TIME_BETWEEN_PRINT 1000
 
 //print 일반함수에서 다루어야 하기 때문에 일반변수로 선언.
 bool m_Flag = true;
@@ -108,11 +109,6 @@ std::string getMapView(std::string enemySymbol)
 	return view;
 }
 
-void CPrinter::ShowScreen()
-{
-
-}
-
 void CPrinter::CombatModeON()
 {
 	m_isCombatOccur = true;
@@ -126,6 +122,11 @@ void CPrinter::CombatModeOFF()
 void CPrinter::PrintExceptEnemy()
 {
 	_PrintExceptEnemy();
+}
+
+void CPrinter::PrintAllThing()
+{
+	_PrintAllThing();
 }
 
 void _PrintAllThing() 
@@ -154,13 +155,14 @@ unsigned int WINAPI ThreadProc( LPVOID lpParam )
 
 	while ( m_Flag )
 	{
-		Sleep(2000);
+		Sleep(PRINT_INTERVAL);
 
 		if ( !m_isCombatOccur )
 		{
-			//_PrintExceptEnemy();
-			//Sleep(3000);
+			_PrintExceptEnemy();
+			Sleep(TIME_BETWEEN_PRINT);
 		}
+
 		_PrintAllThing();
 	}
 	return 0;
@@ -195,6 +197,8 @@ CPrinter::CPrinter(CPlayerCharacter& PC)
 	AddLogBuffer("몬스터들을 잘 피해서 목적지까지 이동하세요.");
 	AddLogBuffer("몬스터를 만나면, 해당 좌표의 공간에서 전투가 이루어집니다.");
 	AddLogBuffer("전투가 시작되면, 주변몹들이 플레이어의 위치를 알고 가까이 다가오니");
+	AddLogBuffer("빨리 전투를 끝내야 합니다!!!");
+	AddLogBuffer(" ");
 	AddLogBuffer("부디.... 잘 살아남으시기 바랍니다.");
 }
 
