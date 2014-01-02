@@ -17,7 +17,7 @@ public:
 protected:
 	MapInfo m_MapInfo[MAP_SIZE][MAP_SIZE];
 	CGameMap(void);
-	~CGameMap(void);
+	virtual ~CGameMap(void);
 private:
 	static CGameMap* instance;
 };

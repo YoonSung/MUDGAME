@@ -27,9 +27,6 @@ CGameManager::CGameManager(void)
 	m_Map = CGameMap::getInstancePtr();
 	m2_Map = m_Map;
 
-	m_Room = CRoom::getInstancePtr();
-	m2_Room = m_Room;
-
 	m_Printer = CPrinter::getInstancePtr();
 	m_Printer->init(*m_PC);
 	m2_Printer = m_Printer;
@@ -41,7 +38,9 @@ CGameManager::CGameManager(void)
 CGameManager::~CGameManager(void)
 {
 	delete m_PC;
-	delete m_Printer;
+
+	CRoom::releaseInstance();
+	CPrinter::releaseInstance();
 	CGameMap::releaseInstance();
 }
 
@@ -49,9 +48,10 @@ void CGameManager::Init()
 {
 	//게임에 대한 설명부분이 있어야 한다.
 	//난이도, 저장된 목록 불러오기 등이 처리되어야 한다.
-	printf_s ( "[Game Start!!]\n" );
+	m_Printer->PrintTextInBox( "[Game Start!!]" );
 
-
+	m_Room = CRoom::getInstancePtr();
+	m2_Room = m_Room;
 	CreateMobs(); //플레이어 주변 일정면적이하에는 생성될 수 없도록 처리해야 한다.
 	m_Printer->AutoMapDisplayON();
 	AutoAIMovementON();
@@ -418,10 +418,11 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
 					MapInfo* mapInfo = m2_Map->GetMapInfo(MonsterPositionX, MonsterPositionY);
 
 					//기존의 맵에서 좀비 삭제
- 					mapInfo->pMob = nullptr;
+ 					
  					monsters[index-1] = nullptr;
  					while (!m2_Room->addMonster(*monster));
 					delete mapInfo->pMob;
+					mapInfo->pMob = nullptr;
 
 					continue;
 				}
@@ -568,16 +569,15 @@ void CGameManager::CheckCombatOccur()
 		if ( !m_IsCombatOccur )
 		{
 			m_IsCombatOccur = true;
+
+			m_Printer->AddLogBuffer(" ");
 			m_Printer->AddLogBuffer("이런!!! 좀비를 만났습니다!!");
 			m_Printer->AddLogBuffer("전투가 곧 시작됩니다.");
-
-			//Room안에서 삭제처리.
-			CMonster monster = *(currentMapInfo->pMob);
-
-			//기존의 맵에서 좀비 삭제
+			m_Printer->AddLogBuffer("좀비가 스코프안에 들어오면 K버튼을 클릭해서 잡으세요.");
+			
+			//Room에서 좀비 삭제
+			while (m_Room->addMonster(*(currentMapInfo->pMob)));
 			currentMapInfo->pMob = nullptr;
-			while (m_Room->addMonster(monster));
-			delete currentMapInfo->pMob;
 
 			Sleep(2100);
 		}
@@ -590,15 +590,6 @@ void CGameManager::CheckCombatOccur()
 void CGameManager::OccurCombat()
 {
 	m_Printer->CombatModeON();
-	
-	//	PrintExceptEnemy();
-
-	//	printf_s ( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!좀비를 만났어요!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
-	// 	Sleep(3000);
-	// 	//Room 클래스 생성, 현재 플레이어 정보 및 좀비 정보를 전달.
-	// 	//화면 오른편에 전투모습 전시, 다른 좀비들이 다가오는 모습도 그대로 노출.
-	// 	//상단의 슬립과 맵플레이 함수 없애기
-	// 	system ( CLEAR_MONITOR );
 	CPlayerCharacter* m_PC_Room = m_Room->getPlayer();
 	m_PC_Room->SetPosition(0,0);
 	m_Room->SynchronizePlayer(m_PC->GetLevel(), m_PC->GetEnergy(), m_PC->GetExperience(), m_PC->GetTotalKillingNum() );
@@ -708,19 +699,39 @@ void CGameManager::EndRoomMission()
 
 void CGameManager::EndMission()
 {
-	printf_s ("미션이 종료되었습니다.\n");
+	m_Printer->AddLogBuffer(" ");
+	m_Printer->AddLogBuffer(" ");
+	m_Printer->AddLogBuffer("미션이 종료되었습니다.");
+	Sleep(4000);
 	m_Printer->AutoMapDisPlayOFF();	
 
 	Sleep(2000);
 
-	if ( m_Room->IsPlayerDead() )
+	if ( !m_Room->IsPlayerDead() )
 	{
+		std::string strInput;
+		
 
+		m_Printer->PrintTextInBox("게임을 계속하시려면 'go'를 중단하시려면 'exit'를 입력해 주세요");
+		while ( getline(std::cin, strInput) )
+		{
+			if ( strInput == "go" || strInput == "GO" )
+			{
+				m_PC->Init();
+				m2_Room->Init();
+				Init();
+				break;
+			}
+			else
+			{
+				exit(1);
+			}
+		}
 	}
 	else
 	{
 		printf_s ("미션이 종료되었습니다.\n");
-		printf_s ("현재 테스트중이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
+		printf_s ("현재 테스트 버전이므로 게임은 한판만 할 수 있어요.\n프로그램을 종료합니다 ^^.");
 		Sleep(3000);
 		exit(1);
 	}

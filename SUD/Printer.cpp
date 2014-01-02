@@ -271,6 +271,8 @@ void _Print(std::string enemySymbol)
 	view.append(getMapView(enemySymbol));
 	view.append(getStatusView());
 	view.append(getLogView());
+	view.append(NEWLINE);
+
 	system ( CLEAR_MONITOR );
 	printf(view.c_str());
 }
@@ -345,4 +347,43 @@ void CPrinter::init(CPlayerCharacter& PC)
 
 CPrinter::~CPrinter(void)
 {
+}
+
+void CPrinter::PrintTextInBox( std::string value )
+{
+
+	std::string view;
+
+	view.append("┏");
+
+	for(int i = 0; i < MAX_LOG_LENGTH-35; ++i) {
+		view.append("━");
+	}
+	view.append("┓");
+	view.append( NEWLINE );
+	view.append("┃");
+
+	int size = value.length();
+
+	std::string temp;
+
+	for ( int j = 0 ; j < MAX_LOG_LENGTH-size ; ++j)
+	{
+		temp.append(" ");
+	}
+
+	view.append(value);
+	view.append(temp);
+	view.append("┃");
+	view.append( NEWLINE );
+
+	view.append("┗");
+	for(int i = 0; i < MAX_LOG_LENGTH-35; ++i) {
+		view.append("━");
+	}
+	view.append("┛");
+
+	system ( CLEAR_MONITOR );
+	printf_s(view.c_str());
+	printf_s(NEWLINE);
 }

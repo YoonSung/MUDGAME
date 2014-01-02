@@ -20,6 +20,7 @@ public:
 	void CRoom::AttackPlayer(int damage);
 	bool IsPlayerDead();
 	void SynchronizePlayer(int level, int energy, int experience, int killingNum);
+	void CRoom::Init();
 private:
 	static CRoom* instance;
 	CPlayerCharacter* m_MockPlayer;

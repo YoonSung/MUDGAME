@@ -14,12 +14,17 @@ CRoom* CRoom::getInstancePtr()
 	return instance;
 }
 
+void CRoom::Init()
+{
+	delete instance;
+	instance = nullptr;
+}
+
 void CRoom::releaseInstance()
 {
 	delete instance;
 }
 
-//현재 호출되지 않는다.
 CPlayerCharacter* CRoom::getPlayer()
 {
 	return m_MockPlayer;
@@ -27,6 +32,7 @@ CPlayerCharacter* CRoom::getPlayer()
 
 bool CRoom::addMonster(CMonster& monster)
 {	
+
 	bool isAdded = false;
 
 	MapInfo* tempMapInfo = GetMapInfo( monster.GetPosition().x, monster.GetPosition().y);
@@ -68,13 +74,10 @@ void CRoom::CheckZombieCapture()
 
 	if (  mapInfo->pMob != nullptr )
 	{
-		//CMonster* test = mapInfo->pMob;
-		//delete test; 메모리누수. 왜 에러가 나는지 모르겠습니다.. block_type_is_invalid type ...
 
 		m_MockPlayer->KillingZombie( (mapInfo->pMob)->GetExperience() );
-
 		printer->AddLogBuffer("좀비를 잡았습니다!!");
-
+		delete mapInfo->pMob;
 		mapInfo->pMob = nullptr;
 		m_CurrentMonsterNumber--;
 	}

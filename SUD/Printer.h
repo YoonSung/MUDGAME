@@ -22,6 +22,7 @@ public:
 	void PrintExceptEnemy();
 	void PrintAllThing();
 	void init(CPlayerCharacter& PC);
+	void PrintTextInBox(std::string string);
 private:
 	static CPrinter* instance;
 	CPrinter::CPrinter();

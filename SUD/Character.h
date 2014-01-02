@@ -19,8 +19,8 @@ class CCharacter
 {
 public:
 	CCharacter ( void );
+	void CCharacter::Init();
 	virtual ~CCharacter ( void );
-
 	virtual void SetPosition ( Position pos );
 	virtual void SetPosition (int x, int y);
 	Position GetPosition(){return m_position;};

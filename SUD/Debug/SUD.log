@@ -1,8 +1,8 @@
-﻿빌드 시작: 2013-12-31 오후 11:06:59
+﻿빌드 시작: 2014-01-02 오전 9:58:21
      1>2 노드의 "C:\Users\YoonSung\Documents\Visual Studio 2012\Projects\cpp\MUDGAME\SUD\SUD.vcxproj" 프로젝트(Build 대상)입니다.
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt GameManager.cpp PlayerCharacter.cpp
-         PlayerCharacter.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt GameManager.cpp SUD.cpp
+         SUD.cpp
          GameManager.cpp
      1>c:\users\yoonsung\documents\visual studio 2012\projects\cpp\mudgame\sud\gamemanager.cpp(124): warning C4244: '초기화 중' : 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
      1>c:\users\yoonsung\documents\visual studio 2012\projects\cpp\mudgame\sud\gamemanager.cpp(125): warning C4244: '초기화 중' : 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
@@ -24,4 +24,4 @@
 
 빌드했습니다.
 
-경과 시간: 00:00:04.53
+경과 시간: 00:00:06.20
