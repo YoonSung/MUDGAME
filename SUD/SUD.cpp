@@ -17,7 +17,7 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	//_crtBreakAlloc = 0x00662F10;
+	//_crtBreakAlloc = 214;
 
 	CGameManager gameManager;
 	gameManager.Init();

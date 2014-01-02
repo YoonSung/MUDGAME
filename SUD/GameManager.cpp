@@ -421,7 +421,7 @@ unsigned int WINAPI MonstersAIMove( LPVOID PlayerCharacter )
  					
  					monsters[index-1] = nullptr;
  					while (!m2_Room->addMonster(*monster));
-					delete mapInfo->pMob;
+					//delete mapInfo->pMob;
 					mapInfo->pMob = nullptr;
 
 					continue;

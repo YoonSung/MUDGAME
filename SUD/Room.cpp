@@ -37,17 +37,13 @@ bool CRoom::addMonster(CMonster& monster)
 
 	MapInfo* tempMapInfo = GetMapInfo( monster.GetPosition().x, monster.GetPosition().y);
 
- 	for ( int index = 0 ; index < MAX_MONSTER_NUM ; ++index )
+ 	if ( tempMapInfo->pMob == nullptr )
  	{
- 		if ( tempMapInfo->pMob == nullptr )
- 		{
- 			tempMapInfo->pMob = &monster;
- 			isAdded = true;
- 			++m_CurrentMonsterNumber;
- 			break;
- 		}
+ 		tempMapInfo->pMob = &monster;
+ 		isAdded = true;
+ 		++m_CurrentMonsterNumber;
+ 
  	}
-
 	return isAdded;
 }
 
