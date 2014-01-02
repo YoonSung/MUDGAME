@@ -16,8 +16,19 @@ CRoom* CRoom::getInstancePtr()
 
 void CRoom::Init()
 {
-	delete instance;
-	instance = nullptr;
+	for ( int i = 0; i < MAP_SIZE; ++i )
+	{
+		for ( int j = 0; j < MAP_SIZE; ++j )
+		{
+			if ( m_MapInfo[i][j].pMob != nullptr )
+			{
+				delete m_MapInfo[i][j].pMob;
+				m_MapInfo[i][j].pMob = nullptr;
+			}
+		}
+	}
+
+	m_CurrentMonsterNumber = 0;
 }
 
 void CRoom::releaseInstance()
@@ -51,7 +62,7 @@ CRoom::CRoom(void)
 {
 	m_MockPlayer = new CPlayerCharacter();
 	m_MockPlayer->SetPosition(0,0);
-	m_CurrentMonsterNumber = 0;
+	
 }
 
 CRoom::~CRoom(void)

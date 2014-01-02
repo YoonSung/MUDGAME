@@ -7,7 +7,7 @@ public CCharacter
 {
 public:
 	CPlayerCharacter(void);
-	~CPlayerCharacter(void);
+	virtual ~CPlayerCharacter(void);
 	void CheckUpdate();
 	void LevelUpgrade();
 	void KillingZombie(int experience);

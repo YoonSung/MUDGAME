@@ -13,7 +13,7 @@ public:
 	static CRoom* getInstancePtr();
 	static void releaseInstance();
 	bool addMonster(CMonster& monster);
-	~CRoom(void);
+	virtual ~CRoom(void);
 	CPlayerCharacter* CRoom::getPlayer();
 	void CheckZombieCapture();
 	int getMonsterNumberInRoom();

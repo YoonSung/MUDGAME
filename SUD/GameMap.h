@@ -13,7 +13,7 @@ public:
 	MapInfo* GetMapInfo ( int x, int y );
 	static CGameMap* getInstancePtr();
 	static void releaseInstance();
-
+	void ClearMap();
 protected:
 	MapInfo m_MapInfo[MAP_SIZE][MAP_SIZE];
 	CGameMap(void);

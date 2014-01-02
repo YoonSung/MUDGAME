@@ -13,7 +13,7 @@ public:
 	static CPrinter* getInstancePtr();
 	static void releaseInstance();
 
-	~CPrinter(void);
+	virtual ~CPrinter(void);
 	void AddLogBuffer(std::string logString);
 	void AutoMapDisplayON();
 	void AutoMapDisPlayOFF();

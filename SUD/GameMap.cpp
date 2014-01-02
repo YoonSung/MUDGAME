@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "GameMap.h"
 
-
 //#define ZERO_MEMORY(mem, size) memset(mem, 0, size)
-CGameMap* CGameMap::instance; //static 변수 참조를 위한 선언
+CGameMap* CGameMap::instance = nullptr; //static 변수 참조를 위한 선언
 MapInfo mapInfo;
 
 CGameMap::CGameMap(void)
@@ -28,6 +27,11 @@ void CGameMap::releaseInstance()
 
 CGameMap::~CGameMap(void)
 {
+	ClearMap();
+}
+
+void CGameMap::ClearMap()
+{
 	for ( int i = 0; i < MAP_SIZE; ++i )
 	{
 		for ( int j = 0; j < MAP_SIZE; ++j )
@@ -39,7 +43,6 @@ CGameMap::~CGameMap(void)
 			}
 		}
 	}
-
 }
 
 MapInfo* CGameMap::GetMapInfo( int x, int y )

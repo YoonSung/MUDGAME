@@ -10,7 +10,7 @@
 #define CLEAR_MONITOR	"cls"
 #define NEWLINE			"\n"
 #define TAP				"\t\t\t" 
-#define PRINT_INTERVAL		500
+#define PRINT_INTERVAL		100
 #define TIME_BETWEEN_PRINT 1000
 
 #define PLAYER_SPACE_IN_ROOM	"□"
@@ -334,7 +334,6 @@ void CPrinter::init(CPlayerCharacter& PC)
 	_m_Map = CGameMap::getInstancePtr();
 	_m_Room = CRoom::getInstancePtr();
 	_m_PC_Room = _m_Room->getPlayer();
-
 
 	AddLogBuffer("게임을 시작합니다.");
 	AddLogBuffer("몬스터들을 잘 피해서 목적지까지 이동하세요.");

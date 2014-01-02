@@ -10,7 +10,7 @@ class CGameManager
 {
 public:
 	CGameManager(void);
-	~CGameManager(void);
+	virtual ~CGameManager(void);
 
 	void Init();
 	void Run();
@@ -19,10 +19,7 @@ protected:
 	bool InputProc();
 	bool InputProcInCombat( CPlayerCharacter* m_PC_Room );
 protected:
-	CGameMap* m_Map;
 	CPlayerCharacter * m_PC;
-	CPrinter* m_Printer;
-	CRoom* m_Room;
 private:
 	bool IsInput( std::string inputValue, const char* compareValue);
 	void CreateMobs();
@@ -31,7 +28,7 @@ private:
 	void EndCombat();
 	bool CheckMissionClear();
 	bool CheckRoomMissionClear();
-	void EndMission();
+	bool EndMission();
 	void EndRoomMission();
 	void destroyMonster(int x, int y);
 	void AutoAIMovementON();
